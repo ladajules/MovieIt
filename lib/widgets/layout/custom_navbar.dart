@@ -26,7 +26,7 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
             ),
             _buildGlassNavPill(),
             IconButton(
-              icon: const Icon(Icons.dark_mode, color: Colors.white),
+              icon: Image.asset('icons/popcorn_icon.png'),
               onPressed: () {},
             )
           ],
