@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/layout/custom_navbar.dart';
 import '../widgets/hero_slider.dart';
 import '../widgets/horizontal_movie_list.dart';
 
@@ -11,9 +10,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _activeCategory = 'Home';
-
-  // This dummy data will eventually be replaced by data fetched from your Node.js API
+  //  dummy data 
   final List<Map<String, String>> _dummyHeroItems = [
     {
       "title": "Ako Ay Mayroong Alagang Aso",
@@ -37,15 +34,10 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
-  void _onNavTap(String category) {
-    setState(() => _activeCategory = category);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: CustomNavBar(activeCategory: _activeCategory, onTap: _onNavTap),
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           _buildBackground(),
@@ -54,13 +46,13 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const SizedBox(height: 180),
                 
-                // Extracted Hero Slider
+                //  hero Slider
                 HeroSlider(movies: _dummyHeroItems),
                 
                 const SizedBox(height: 60),
                 
-                // Extracted Horizontal List
-                HorizontalMovieList(sectionTitle: "Trending in $_activeCategory"),
+                //  horizontal List
+                HorizontalMovieList(sectionTitle: "Trending Now"),
                 
                 const SizedBox(height: 60),
               ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// I renamed the class to match the filename perfectly!
 class MovieCard extends StatelessWidget {
   final String title;
 
@@ -12,11 +11,11 @@ class MovieCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 350, // Back to your original wide layout
+      width: 350, 
       margin: const EdgeInsets.only(right: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: Colors.white10, // Your original background color
+        color: Colors.white10, 
       ),
       child: Center(
         child: Column(
