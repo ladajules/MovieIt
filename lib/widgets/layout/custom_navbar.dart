@@ -52,13 +52,13 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
             children: [
               IconButton(
                 
-                icon: Icon(Icons.home, color: activeCategory == 'Home' ? const Color(0xFFAC66FF) : Colors.white), 
+                icon: Icon(Icons.home_rounded, color: activeCategory == 'Home' ? const Color(0xFFAC66FF) : Colors.white), 
                 onPressed: () => onTap('Home'),
               ),
               const SizedBox(width: 40), 
               IconButton(
            
-                icon: Icon(Icons.search, color: activeCategory == 'Search' ? const Color(0xFFAC66FF) : Colors.white),
+                icon: Icon(Icons.search_rounded, color: activeCategory == 'Search' ? const Color(0xFFAC66FF) : Colors.white),
                 onPressed: () => onTap('Search'),
               ),
               const SizedBox(width: 40),

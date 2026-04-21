@@ -46,7 +46,7 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
                 itemCount: 10,
                 itemBuilder: (context, index) {
                   return MovieCard(
-                    title: "Movie Title $index",
+                    title: "Movie Title ${index + 1}",
                   );
                 },
               ),

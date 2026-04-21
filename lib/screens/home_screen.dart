@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/layout/custom_navbar.dart';
 import '../widgets/hero_slider.dart';
 import '../widgets/horizontal_movie_list.dart';
 
@@ -11,8 +10,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _activeCategory = 'Home';
-
   //  dummy data 
   final List<Map<String, String>> _dummyHeroItems = [
     {
@@ -37,15 +34,10 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
-  void _onNavTap(String category) {
-    setState(() => _activeCategory = category);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: CustomNavBar(activeCategory: _activeCategory, onTap: _onNavTap),
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           _buildBackground(),
@@ -60,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 60),
                 
                 //  horizontal List
-                HorizontalMovieList(sectionTitle: "Trending in $_activeCategory"),
+                HorizontalMovieList(sectionTitle: "Trending Now"),
                 
                 const SizedBox(height: 60),
               ],
