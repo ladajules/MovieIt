@@ -38,14 +38,13 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
             thickness: 4,
             thumbVisibility: true,
             child: SizedBox(
-              height: 280, // Slightly taller to fit the poster, title, and rating nicely
+              height: 280, 
               child: ListView.builder(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.only(bottom: 20),
                 itemCount: 10,
                 itemBuilder: (context, index) {
-                  // Using our new extracted widget!
                   return MovieCard(
                     title: "Movie Title $index",
                   );

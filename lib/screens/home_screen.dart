@@ -13,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String _activeCategory = 'Home';
 
-  // This dummy data will eventually be replaced by data fetched from your Node.js API
+  //  dummy data 
   final List<Map<String, String>> _dummyHeroItems = [
     {
       "title": "Ako Ay Mayroong Alagang Aso",
@@ -54,12 +54,12 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const SizedBox(height: 180),
                 
-                // Extracted Hero Slider
+                //  hero Slider
                 HeroSlider(movies: _dummyHeroItems),
                 
                 const SizedBox(height: 60),
                 
-                // Extracted Horizontal List
+                //  horizontal List
                 HorizontalMovieList(sectionTitle: "Trending in $_activeCategory"),
                 
                 const SizedBox(height: 60),
