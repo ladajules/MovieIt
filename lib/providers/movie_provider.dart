@@ -1,38 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:movieit/models/movie_details_model.dart';
+import 'package:movieit/models/movie_models.dart';
 import 'package:movieit/services/api_client.dart';
 
 class MovieProvider extends ChangeNotifier{
   final ApiClient apiClient = ApiClient();
 
-  List<dynamic> _trendingMovies = [];
-  List<dynamic> _discoverMovies = [];
-  List<dynamic> _searchMovies = [];
-  Map<String, dynamic> _movieDetails = {};
+  List<Movie> _trendingMovies = [];
+  List<Movie> _discoverMovies = [];
+  List<Movie> _searchMovies = [];
+  List<Movie> _top4Movies = [];
+  MovieDetails? _movieDetails;
 
   bool _isLoading = false;
   String _errorMessage = '';
 
   //getters
   
-  List<dynamic> get trendingMoviesList => _trendingMovies;
-  List<dynamic> get discoverMoviesList => _discoverMovies;
-  List<dynamic> get searchMoviesList => _searchMovies;
-  Map<String, dynamic> get movieDetailsMap => _movieDetails;
+  List<Movie> get trendingMoviesList => _trendingMovies;
+  List<Movie> get discoverMoviesList => _discoverMovies;
+  List<Movie> get searchMoviesList => _searchMovies;
+  List<Movie> get top4MoviesList => _top4Movies;
+  MovieDetails? get movieDetailsMap => _movieDetails;
   
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
 
-  Future<void> loadTrendingAndDiscover() async {
+  Future<void> loadTrendingAndDiscoverAndTop4() async {
     _setLoading(true);
     try{
       final results = await Future.wait([
         apiClient.getTrendingMovies(),
         apiClient.getDiscoverMovies(),
-
+        apiClient.getTop4(),
       ]);
 
       _trendingMovies = results[0];
       _discoverMovies = results[1];
+      _top4Movies = results[2];
       _errorMessage = '';
     } catch (e){
       _errorMessage = 'Failed to load trending and discover movies';

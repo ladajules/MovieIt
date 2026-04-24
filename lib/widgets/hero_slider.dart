@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:movieit/models/movie_models.dart';
 
 class HeroSlider extends StatefulWidget {
-  final List<Map<String, String>> movies;
+  final List<Movie> movies;
 
   const HeroSlider({super.key, required this.movies});
 
@@ -69,12 +70,15 @@ class _HeroSliderState extends State<HeroSlider> {
     );
   }
 
-  Widget _buildHeroCard(Map<String, String> item) {
+  Widget _buildHeroCard(Movie item) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
-        color: Color(int.parse(item['color']!)),
+        image: DecorationImage(
+          image: NetworkImage(item.backdropUrl ?? item.posterUrl ?? 'https://via.placeholder.com/800x500'),
+          fit: BoxFit.cover,
+        ),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 25, offset: const Offset(0, 10))
         ],
@@ -101,15 +105,15 @@ class _HeroSliderState extends State<HeroSlider> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    item['title']!,
+                    item.title,
                     style: GoogleFonts.poppins(color: Colors.white, fontSize: 44, fontWeight: FontWeight.bold, height: 1.1),
                   ),
                   const SizedBox(height: 15),
                   Row(
                     children: [
-                      Text(item['rating']!, style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 18)),
+                      Text(item.rating ?? 'N/A', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 18)),
                       const SizedBox(width: 15),
-                      Text(item['year']!, style: const TextStyle(color: Colors.white70)),
+                      Text(item.year ?? 'N/A', style: const TextStyle(color: Colors.white70)),
                       const SizedBox(width: 15),
                       _buildTag('R'),
                     ],
@@ -118,7 +122,7 @@ class _HeroSliderState extends State<HeroSlider> {
                   SizedBox(
                     width: 450,
                     child: Text(
-                      item['desc']!,
+                      item.overview,
                       style: const TextStyle(color: Colors.white60, fontSize: 17, height: 1.5),
                     ),
                   ),

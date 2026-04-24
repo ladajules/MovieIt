@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:movieit/providers/movie_provider.dart';
 import 'package:movieit/screens/home_screen.dart';
 import 'package:movieit/screens/search_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:movieit/widgets/layout/custom_navbar.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => MovieProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 final GoRouter _router = GoRouter(
