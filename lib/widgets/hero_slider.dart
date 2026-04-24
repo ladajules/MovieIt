@@ -85,13 +85,7 @@ class _HeroSliderState extends State<HeroSlider> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(32),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -30, bottom: -20,
-              child: Icon(Icons.movie_creation_outlined, size: 300, color: Colors.white.withOpacity(0.05)),
-            ),
-            Container(
+        child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.centerLeft,
@@ -114,16 +108,16 @@ class _HeroSliderState extends State<HeroSlider> {
                       Text(item.rating ?? 'N/A', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 18)),
                       const SizedBox(width: 15),
                       Text(item.year ?? 'N/A', style: const TextStyle(color: Colors.white70)),
-                      const SizedBox(width: 15),
-                      _buildTag('R'),
                     ],
                   ),
                   const SizedBox(height: 25),
                   SizedBox(
                     width: 450,
                     child: Text(
-                      item.overview,
-                      style: const TextStyle(color: Colors.white60, fontSize: 17, height: 1.5),
+                            item.overview,
+                            style: const TextStyle(color: Colors.white60, fontSize: 17, height: 1.5),
+                            maxLines: 4,
+                            overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   const SizedBox(height: 35),
@@ -139,10 +133,8 @@ class _HeroSliderState extends State<HeroSlider> {
                 ],
               ),
             ),
-          ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildPageIndicators() {

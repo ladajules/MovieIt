@@ -26,7 +26,7 @@ class Movie{
       posterUrl: json['posterUrl'],
       backdropUrl: json['backdropUrl'],
       year: json['year']?.toString(),
-      rating: json['rating']?.toString(),   
+      rating: (json['popularity'] as num?)?.round().toString(),   
     );
   }
 }
