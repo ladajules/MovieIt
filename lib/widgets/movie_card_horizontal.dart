@@ -1,35 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
+import 'package:movieit/models/movie_models.dart';
 
 class MovieCard extends StatelessWidget {
-  final String title;
+  final Movie item;
+
 
   const MovieCard({
     super.key,
-    required this.title,
+    required this.item,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 350, 
-      margin: const EdgeInsets.only(right: 20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.white10, 
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.movie_filter, color: Colors.white24, size: 50),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
-      ),
+      Logger log = Logger();
+    return GestureDetector(
+      onTap: (){
+        log.d("Movie card tapped");
+      },
+      child:  Container(
+              width: 160, 
+              margin: const EdgeInsets.only(right: 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                image: DecorationImage(
+                  image: NetworkImage(item.posterUrl ?? 'https://via.placeholder.com/500x750'),
+                  fit: BoxFit.cover,
+                )
+              ),
+            )
     );
+    
+   
   }
 }

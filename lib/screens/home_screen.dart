@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 60),
                           
                           //  horizontal List
-                          HorizontalMovieList(sectionTitle: "Trending Now"),
+                          HorizontalMovieList(movies: movieProvider.trendingMoviesList, sectionTitle: "Trending Now",),
                           
                           const SizedBox(height: 60),
                         ],
