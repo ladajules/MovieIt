@@ -123,8 +123,6 @@ class _HeroSliderState extends State<HeroSlider> {
                   const SizedBox(height: 35),
                   Row(
                     children: [
-                      _buildActionBtn('Play', Icons.play_arrow, const Color(0xFFAC66FF)),
-                      const SizedBox(width: 15),
                       _buildActionBtn('More Info', Icons.info_outline, Colors.white12),
                       const SizedBox(width: 15),
                       _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A)),
