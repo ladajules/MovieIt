@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:movieit/models/movie_models.dart';
+import 'package:go_router/go_router.dart';
 
 class MovieCard extends StatelessWidget {
   final Movie item;
@@ -17,18 +18,30 @@ class MovieCard extends StatelessWidget {
     return GestureDetector(
       onTap: (){
         log.d("Movie card tapped");
+        context.push('/movie/${item.id}');
       },
-      child:  Container(
-              width: 160, 
-              margin: const EdgeInsets.only(right: 20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                image: DecorationImage(
-                  image: NetworkImage(item.posterUrl ?? 'https://via.placeholder.com/500x750'),
-                  fit: BoxFit.cover,
-                )
-              ),
-            )
+      child: Container(
+        margin: const EdgeInsets.only(right: 20), 
+        child: AspectRatio(
+          aspectRatio: 2 / 3, 
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+              image: DecorationImage(
+                image: NetworkImage(item.posterUrl ?? 'https://via.placeholder.com/400x600?text=No+Poster'),
+                fit: BoxFit.cover,
+              )
+            ),
+          ),
+        ),
+      )
     );
     
    

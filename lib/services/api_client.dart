@@ -72,13 +72,14 @@ class ApiClient {
         }
     }
 
-    Future<MovieDetails> getMovieDetails(int movieId) async {
+    Future<MovieDetails> getMovieDetails(String movieId) async {
         try{
             final response = await http.get(Uri.parse('$_baseUrl/$movieId'));
             if (response.statusCode == 200){
                 return MovieDetails.fromJson(jsonDecode(response.body));
             } else {
-                throw Exception('Failed to load movie details');
+                
+                throw Exception('Failed to load movie details: ${response.statusCode}');
             }
         } catch (e){
             logger.e('ApiClient error (Movie Details), $e');

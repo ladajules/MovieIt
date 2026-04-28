@@ -65,7 +65,7 @@ class MovieProvider extends ChangeNotifier{
   Future<void> LoadMovieDetails(int movieId) async {
     _setLoading(true);  
     try{
-      _movieDetails = await apiClient.getMovieDetails(movieId);
+      _movieDetails = await apiClient.getMovieDetails(movieId.toString());
       _errorMessage = '';
     } catch(e){
       _errorMessage = 'Failed to load movie details';

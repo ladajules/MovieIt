@@ -74,7 +74,7 @@ class _HeroSliderState extends State<HeroSlider> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(18),
         image: DecorationImage(
           image: NetworkImage(item.backdropUrl ?? item.posterUrl ?? 'https://via.placeholder.com/800x500'),
           fit: BoxFit.cover,
@@ -84,7 +84,7 @@ class _HeroSliderState extends State<HeroSlider> {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(18),
         child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

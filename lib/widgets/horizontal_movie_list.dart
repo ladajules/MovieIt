@@ -26,7 +26,7 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
-      child: Column(
+      child:  Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -41,7 +41,7 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
             thickness: 4,
             thumbVisibility: true,
             child: SizedBox(
-              height: 280, 
+              height: 350, 
               child: ListView.builder(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
