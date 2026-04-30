@@ -2,17 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/movie_details_model.dart';
 
-/// MovieHeroSection
-///
-/// The top portion of the detail screen — full-bleed backdrop image,
-/// gradient overlay, and all the primary movie metadata overlaid on it.
-///
-/// Layout matches the reference screenshot:
-///   LEFT COLUMN  → Title, genres, watchlist button, stats row, director, synopsis
-///   RIGHT PANEL  → Runtime, Language, Release Date, Budget, Revenue card
-///
-/// This is a purely presentational widget: it receives a [MovieDetail]
-/// and an [onAddToWatchlist] callback. No state, no API calls.
 class MovieHeroSection extends StatelessWidget {
   final MovieDetails movie;
   final VoidCallback? onAddToWatchlist;
@@ -28,21 +17,17 @@ class MovieHeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    // On wider screens match the reference layout; collapse to single column on mobile
+
     final isWide = screenWidth > 900;
 
     return SizedBox(
-      // Hero takes ~60vh — enough to show backdrop without cutting content
       height: isWide ? 520 : null,
       child: Stack(
         children: [
-          // ── 1. Full-bleed backdrop ───────────────────────
           _BackdropImage(url: movie.backdropUrl),
 
-          // ── 2. Gradient overlay (bottom-to-top dark fade) ─
           const _GradientOverlay(),
 
-          // ── 3. Content layer ─────────────────────────────
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.symmetric(
@@ -60,7 +45,6 @@ class MovieHeroSection extends StatelessWidget {
   }
 }
 
-// ── Sub-widgets (private to this file) ────────────────────────────────────────
 
 class _BackdropImage extends StatelessWidget {
   final String? url;
@@ -75,7 +59,6 @@ class _BackdropImage extends StatelessWidget {
       child: Image.network(
         url!,
         fit: BoxFit.cover,
-        // Show dark placeholder while loading — no jarring white flash
         frameBuilder: (context, child, frame, _) =>
             frame == null ? Container(color: const Color(0xFF1A1A1A)) : child,
         errorBuilder: (_, __, ___) => Container(color: const Color(0xFF1A1A1A)),
@@ -106,7 +89,6 @@ class _GradientOverlay extends StatelessWidget {
   }
 }
 
-/// Wide layout: left info column + right metadata panel (matches screenshot)
 class _WideLayout extends StatelessWidget {
   final MovieDetails movie;
   final VoidCallback? onAddToWatchlist;
@@ -117,18 +99,16 @@ class _WideLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.end, // Pin content to bottom of backdrop
+      mainAxisAlignment: MainAxisAlignment.end, 
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // LEFT: title, genres, buttons, stats, synopsis
             Expanded(
               flex: 6,
               child: _InfoColumn(movie: movie, onAddToWatchlist: onAddToWatchlist, isInWatchlist: isInWatchlist),
             ),
             const SizedBox(width: 40),
-            // RIGHT: extra metadata card
             SizedBox(
               width: 220,
               child: _MetadataPanel(movie: movie),
@@ -140,7 +120,6 @@ class _WideLayout extends StatelessWidget {
   }
 }
 
-/// Narrow layout (mobile): stacked, metadata panel below synopsis
 class _NarrowLayout extends StatelessWidget {
   final MovieDetails movie;
   final VoidCallback? onAddToWatchlist;
@@ -163,7 +142,6 @@ class _NarrowLayout extends StatelessWidget {
   }
 }
 
-/// _InfoColumn — title, genres, watchlist button, stats row, director, synopsis
 class _InfoColumn extends StatelessWidget {
   final MovieDetails movie;
   final VoidCallback? onAddToWatchlist;
@@ -176,7 +154,6 @@ class _InfoColumn extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // ── Title (Bagel Fat One — matches existing codebase) ──
         Text(
           movie.title.toUpperCase(),
           style: GoogleFonts.bagelFatOne(
@@ -187,25 +164,21 @@ class _InfoColumn extends StatelessWidget {
         ),
         const SizedBox(height: 6),
 
-        // ── Genres (e.g. "Horror • Action • Comedy") ──────────
         Text(
           movie.genres.join(' • '),
           style: const TextStyle(color: Colors.grey, fontSize: 16),
         ),
         const SizedBox(height: 20),
 
-        // ── Add to Watchlist button ────────────────────────────
         _WatchlistButton(
           isInWatchlist: isInWatchlist,
           onTap: onAddToWatchlist,
         ),
         const SizedBox(height: 24),
 
-        // ── Stats row: year · runtime · certification · rating ─
         _StatsRow(movie: movie),
         const SizedBox(height: 8),
 
-        // ── Director ──────────────────────────────────────────
         RichText(
           text: TextSpan(
             children: [
@@ -226,7 +199,6 @@ class _InfoColumn extends StatelessWidget {
         ),
         const SizedBox(height: 20),
 
-        // ── Synopsis (max width 560 to keep line length readable) ─
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: Text(
@@ -243,7 +215,6 @@ class _InfoColumn extends StatelessWidget {
   }
 }
 
-/// _WatchlistButton — the primary CTA (replaces Play button from reference)
 class _WatchlistButton extends StatelessWidget {
   final bool isInWatchlist;
   final VoidCallback? onTap;
@@ -254,7 +225,6 @@ class _WatchlistButton extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // ── Primary: Add to Watchlist ──────────────────────────
         GestureDetector(
           onTap: onTap,
           child: AnimatedContainer(
@@ -290,7 +260,6 @@ class _WatchlistButton extends StatelessWidget {
   }
 }
 
-/// _StatsRow — year, runtime, certification chip, star rating
 class _StatsRow extends StatelessWidget {
   final MovieDetails movie;
   const _StatsRow({required this.movie});
@@ -303,7 +272,6 @@ class _StatsRow extends StatelessWidget {
         _dot(),
         _statText(movie.formattedRuntime),
         const SizedBox(width: 10),
-        // Certification chip (outlined border, like reference)
         _CertChip(label: movie.certification),
         const SizedBox(width: 10),
         const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
@@ -341,7 +309,6 @@ class _CertChip extends StatelessWidget {
   }
 }
 
-/// _MetadataPanel — right-side card: Runtime, Language, Release Date, Budget, Revenue
 class _MetadataPanel extends StatelessWidget {
   final MovieDetails movie;
   const _MetadataPanel({required this.movie});

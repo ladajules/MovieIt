@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:movieit/models/movie_models.dart';
+import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 
 class HeroSlider extends StatefulWidget {
   final List<Movie> movies;
@@ -71,6 +73,7 @@ class _HeroSliderState extends State<HeroSlider> {
   }
 
   Widget _buildHeroCard(Movie item) {
+    Logger log = Logger();
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
@@ -123,9 +126,20 @@ class _HeroSliderState extends State<HeroSlider> {
                   const SizedBox(height: 35),
                   Row(
                     children: [
-                      _buildActionBtn('More Info', Icons.info_outline, Colors.white12),
+                      GestureDetector(
+                        onTap: () {
+                          log.d("hero slider ${item.id} tapped");
+                          context.push('/movie/${item.id}');
+                        },
+                        child: _buildActionBtn('More Info', Icons.info_outline, Colors.white12)
+                      ),
                       const SizedBox(width: 15),
-                      _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A)),
+                      GestureDetector(
+                        onTap: () {
+                          /// TODO: add movie to watshlisht
+                        },
+                        child: _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A))
+                      ),
                     ],
                   )
                 ],
