@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:movieit/models/movie_models.dart';
+import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 
 class HeroSlider extends StatefulWidget {
   final List<Movie> movies;
@@ -14,6 +16,7 @@ class HeroSlider extends StatefulWidget {
 class _HeroSliderState extends State<HeroSlider> {
   late PageController _heroPageController;
   int _currentHeroPage = 0;
+  Logger log = Logger();
 
   @override
   void initState() {
@@ -71,6 +74,7 @@ class _HeroSliderState extends State<HeroSlider> {
   }
 
   Widget _buildHeroCard(Movie item) {
+    Logger log = Logger();
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
@@ -123,9 +127,20 @@ class _HeroSliderState extends State<HeroSlider> {
                   const SizedBox(height: 35),
                   Row(
                     children: [
-                      _buildActionBtn('More Info', Icons.info_outline, Colors.white12),
+                         _buildActionBtn('More Info', Icons.info_outline, Colors.white12, () {
+                          log.d("hero slider ${item.id} tapped");
+                          context.push('/movie/${item.id}');
+                        }),
                       const SizedBox(width: 15),
-                      _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A)),
+
+                      GestureDetector(
+                        onTap: () {
+                          /// TODO: add movie to watshlisht
+                        },
+                        child: _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A), (){
+                          log.d("praktis");
+                        }),
+                      ),
                     ],
                   )
                 ],
@@ -174,9 +189,9 @@ class _HeroSliderState extends State<HeroSlider> {
     );
   }
 
-  Widget _buildActionBtn(String label, IconData icon, Color color) {
+  Widget _buildActionBtn(String label, IconData icon, Color color, VoidCallback onTap) {
     return ElevatedButton.icon(
-      onPressed: () {},
+      onPressed: onTap,
       icon: Icon(icon, size: 20, color: Colors.white),
       label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
       style: ElevatedButton.styleFrom(
