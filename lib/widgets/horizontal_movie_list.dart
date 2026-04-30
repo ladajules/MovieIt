@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:movieit/models/movie_models.dart';
 import 'movie_card_horizontal.dart';
 
 class HorizontalMovieList extends StatefulWidget {
+  final List<Movie> movies;
   final String sectionTitle;
   
-  const HorizontalMovieList({super.key, required this.sectionTitle});
+  const HorizontalMovieList({super.key, required this.movies, required this.sectionTitle});
 
   @override
   State<HorizontalMovieList> createState() => _HorizontalMovieListState();
@@ -19,15 +21,16 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
-      child: Column(
+      child:  Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.sectionTitle, 
+            widget.sectionTitle,
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)
           ),
           const SizedBox(height: 20),
@@ -38,7 +41,7 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
             thickness: 4,
             thumbVisibility: true,
             child: SizedBox(
-              height: 280, 
+              height: 350, 
               child: ListView.builder(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
@@ -46,7 +49,7 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
                 itemCount: 10,
                 itemBuilder: (context, index) {
                   return MovieCard(
-                    title: "Movie Title ${index + 1}",
+                   item: widget.movies[index], 
                   );
                 },
               ),

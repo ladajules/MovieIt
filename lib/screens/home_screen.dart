@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import 'package:movieit/providers/movie_provider.dart';
+import 'package:provider/provider.dart';
 import '../widgets/hero_slider.dart';
 import '../widgets/horizontal_movie_list.dart';
 
@@ -10,54 +13,54 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  //  dummy data 
-  final List<Map<String, String>> _dummyHeroItems = [
-    {
-      "title": "Ako Ay Mayroong Alagang Aso",
-      "desc": "A heartwarming tale about a man and his dog driving through Cubao. Beep beep beep.",
-      "rating": "7.0", "year": "2026", "color": "0xFF1A1A2E"
-    },
-    {
-      "title": "The Midnight Express",
-      "desc": "A thrilling journey through the neon-lit streets of a futuristic city. Time is running out.",
-      "rating": "8.5", "year": "2025", "color": "0xFF2E1A1A"
-    },
-    {
-      "title": "Silence of the Stars",
-      "desc": "An astronaut's solo mission to the edge of the galaxy takes a mysterious turn.",
-      "rating": "9.2", "year": "2027", "color": "0xFF1A2E1A"
-    },
-    {
-      "title": "Cyber City 2077",
-      "desc": "In a world of machines, one man discovers what it truly means to be human.",
-      "rating": "8.8", "year": "2028", "color": "0xFF2E2E1A"
-    },
-  ];
 
   @override
-  Widget build(BuildContext context) {
+  void initState(){
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      Provider.of<MovieProvider>(context, listen: false).loadTrendingAndDiscoverAndTop4();
+    });
+  }
+  
+ 
+  @override
+  Widget build(BuildContext context) {  
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           _buildBackground(),
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 180),
-                
-                //  hero Slider
-                HeroSlider(movies: _dummyHeroItems),
-                
-                const SizedBox(height: 60),
-                
-                //  horizontal List
-                HorizontalMovieList(sectionTitle: "Trending Now"),
-                
-                const SizedBox(height: 60),
-              ],
-            ),
-          ),
+
+          Consumer<MovieProvider>(
+            builder: (context, movieProvider, child){
+              if (movieProvider.isLoading){
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if(movieProvider.errorMessage.isNotEmpty){
+                return Center(child: Text(movieProvider.errorMessage, style: const TextStyle(color: Colors.red, fontSize: 18)));
+              }
+
+              return SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 180),
+                          
+                          //  hero Slider
+                          HeroSlider(movies: movieProvider.top4MoviesList),
+                          
+                          const SizedBox(height: 60),
+                          
+                          //  horizontal List
+                          HorizontalMovieList(movies: movieProvider.trendingMoviesList, sectionTitle: "Trending Now",),
+                          
+                          const SizedBox(height: 60),
+                        ],
+                      ),
+                    );
+            }
+          )
+          
         ],
       ),
     );

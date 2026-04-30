@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:movieit/providers/movie_provider.dart';
 import 'package:movieit/screens/home_screen.dart';
 import 'package:movieit/screens/search_screen.dart';
+import 'package:movieit/screens/movie_detail_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:movieit/widgets/layout/custom_navbar.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => MovieProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 final GoRouter _router = GoRouter(
@@ -13,7 +21,6 @@ final GoRouter _router = GoRouter(
   routes: [
     ShellRoute(
       builder: (context, state, child) {
-        
         String activeCategory = 'Home';
         if (state.fullPath == '/search') activeCategory = 'Search';
         if (state.fullPath == '/watchlist') activeCategory = 'Watchlist';
@@ -29,13 +36,9 @@ final GoRouter _router = GoRouter(
                if (category == 'Watchlist') context.go('/watchlist');
             },
           ),
-          
-          body: child, 
-          
-          // persistent footer too maybe perhaps?
+          body: child,
         );
       },
-      
       routes: [
         GoRoute(
           path: '/',
@@ -52,6 +55,14 @@ final GoRouter _router = GoRouter(
           ),
         ),
       ],
+    ),
+
+    GoRoute(
+      path: '/movie/:id',
+      builder: (context, state) {
+        final movieId = state.pathParameters['id']!;
+        return MovieDetailScreen(movieId: movieId);
+      },
     ),
   ],
 );

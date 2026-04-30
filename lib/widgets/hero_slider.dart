@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:movieit/models/movie_models.dart';
+import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 
 class HeroSlider extends StatefulWidget {
-  final List<Map<String, String>> movies;
+  final List<Movie> movies;
 
   const HeroSlider({super.key, required this.movies});
 
@@ -13,6 +16,7 @@ class HeroSlider extends StatefulWidget {
 class _HeroSliderState extends State<HeroSlider> {
   late PageController _heroPageController;
   int _currentHeroPage = 0;
+  Logger log = Logger();
 
   @override
   void initState() {
@@ -69,25 +73,23 @@ class _HeroSliderState extends State<HeroSlider> {
     );
   }
 
-  Widget _buildHeroCard(Map<String, String> item) {
+  Widget _buildHeroCard(Movie item) {
+    Logger log = Logger();
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
-        color: Color(int.parse(item['color']!)),
+        borderRadius: BorderRadius.circular(18),
+        image: DecorationImage(
+          image: NetworkImage(item.backdropUrl ?? item.posterUrl ?? 'https://via.placeholder.com/800x500'),
+          fit: BoxFit.cover,
+        ),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 25, offset: const Offset(0, 10))
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -30, bottom: -20,
-              child: Icon(Icons.movie_creation_outlined, size: 300, color: Colors.white.withOpacity(0.05)),
-            ),
-            Container(
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.centerLeft,
@@ -101,44 +103,51 @@ class _HeroSliderState extends State<HeroSlider> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    item['title']!,
+                    item.title,
                     style: GoogleFonts.poppins(color: Colors.white, fontSize: 44, fontWeight: FontWeight.bold, height: 1.1),
                   ),
                   const SizedBox(height: 15),
                   Row(
                     children: [
-                      Text(item['rating']!, style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 18)),
+                      Text(item.rating ?? 'N/A', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 18)),
                       const SizedBox(width: 15),
-                      Text(item['year']!, style: const TextStyle(color: Colors.white70)),
-                      const SizedBox(width: 15),
-                      _buildTag('R'),
+                      Text(item.year ?? 'N/A', style: const TextStyle(color: Colors.white70)),
                     ],
                   ),
                   const SizedBox(height: 25),
                   SizedBox(
                     width: 450,
                     child: Text(
-                      item['desc']!,
-                      style: const TextStyle(color: Colors.white60, fontSize: 17, height: 1.5),
+                            item.overview,
+                            style: const TextStyle(color: Colors.white60, fontSize: 17, height: 1.5),
+                            maxLines: 4,
+                            overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   const SizedBox(height: 35),
                   Row(
                     children: [
-                      _buildActionBtn('Play', Icons.play_arrow, const Color(0xFFAC66FF)),
+                         _buildActionBtn('More Info', Icons.info_outline, Colors.white12, () {
+                          log.d("hero slider ${item.id} tapped");
+                          context.push('/movie/${item.id}');
+                        }),
                       const SizedBox(width: 15),
-                      _buildActionBtn('More Info', Icons.info_outline, Colors.white12),
-                      const SizedBox(width: 15),
-                      _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A)),
+
+                      GestureDetector(
+                        onTap: () {
+                          /// TODO: add movie to watshlisht
+                        },
+                        child: _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A), (){
+                          log.d("praktis");
+                        }),
+                      ),
                     ],
                   )
                 ],
               ),
             ),
-          ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildPageIndicators() {
@@ -180,9 +189,9 @@ class _HeroSliderState extends State<HeroSlider> {
     );
   }
 
-  Widget _buildActionBtn(String label, IconData icon, Color color) {
+  Widget _buildActionBtn(String label, IconData icon, Color color, VoidCallback onTap) {
     return ElevatedButton.icon(
-      onPressed: () {},
+      onPressed: onTap,
       icon: Icon(icon, size: 20, color: Colors.white),
       label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
       style: ElevatedButton.styleFrom(
