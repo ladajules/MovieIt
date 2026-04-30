@@ -52,6 +52,7 @@ class MovieProvider extends ChangeNotifier{
     }
 
     _setLoading(true);
+    _searchMovies.clear();
     try{
       _searchMovies = await apiClient.getSearchMovies(query);
       _errorMessage = '';

@@ -16,6 +16,7 @@ class HeroSlider extends StatefulWidget {
 class _HeroSliderState extends State<HeroSlider> {
   late PageController _heroPageController;
   int _currentHeroPage = 0;
+  Logger log = Logger();
 
   @override
   void initState() {
@@ -126,19 +127,19 @@ class _HeroSliderState extends State<HeroSlider> {
                   const SizedBox(height: 35),
                   Row(
                     children: [
-                      GestureDetector(
-                        onTap: () {
+                         _buildActionBtn('More Info', Icons.info_outline, Colors.white12, () {
                           log.d("hero slider ${item.id} tapped");
                           context.push('/movie/${item.id}');
-                        },
-                        child: _buildActionBtn('More Info', Icons.info_outline, Colors.white12)
-                      ),
+                        }),
                       const SizedBox(width: 15),
+
                       GestureDetector(
                         onTap: () {
                           /// TODO: add movie to watshlisht
                         },
-                        child: _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A))
+                        child: _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A), (){
+                          log.d("praktis");
+                        }),
                       ),
                     ],
                   )
@@ -188,9 +189,9 @@ class _HeroSliderState extends State<HeroSlider> {
     );
   }
 
-  Widget _buildActionBtn(String label, IconData icon, Color color) {
+  Widget _buildActionBtn(String label, IconData icon, Color color, VoidCallback onTap) {
     return ElevatedButton.icon(
-      onPressed: () {},
+      onPressed: onTap,
       icon: Icon(icon, size: 20, color: Colors.white),
       label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
       style: ElevatedButton.styleFrom(
