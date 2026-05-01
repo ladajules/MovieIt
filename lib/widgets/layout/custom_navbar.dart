@@ -17,45 +17,53 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            Row(
-              children: [
-                Image.asset(
-                  'icons/popcorn_icon.png',
-                  color: Colors.white,
-                  width: 30,
-                  height: 30,
-                ),
-                const SizedBox(width: 10,),
-
-                Text(
-                  "MovieIT", 
-                  style: GoogleFonts.bagelFatOne(color: Colors.white, fontSize: 20)
-                ),
-              ],
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'icons/popcorn_icon.png',
+                    color: Colors.white,
+                    width: 30,
+                    height: 30,
+                  ),
+                  const SizedBox(width: 10,),
+              
+                  Text(
+                    "MovieIT", 
+                    style: GoogleFonts.bagelFatOne(color: Colors.white, fontSize: 20)
+                  ),
+                ],
+              ),
             ),
-            
+
             _buildGlassNavPill(),
 
-            Row(
-              children: [
-                _HoverActionIcon(
-                  icon: Icons.notifications_none_rounded,
-                  onTap: () {
-                    /// TODO: pop-up modal showing notifications
-                  },
-                ),
-                const SizedBox(width: 6,),
-                
-                _HoverActionIcon(
-                  icon: Icons.settings_rounded,
-                  onTap: () {
-                    /// TODO: pop-up modal showing settings? 
-                  },
-                ),
-              ],
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _HoverActionIcon(
+                    icon: Icons.notifications_none_rounded,
+                    onTap: () {
+                      /// TODO: pop-up modal showing notifications
+                    },
+                  ),
+                  const SizedBox(width: 6,),
+                  
+                  _HoverActionIcon(
+                    icon: Icons.settings_rounded,
+                    onTap: () {
+                      /// TODO: pop-up modal showing settings? 
+                    },
+                  ),
+                ],
+              ),
             )
           ],
         ),
