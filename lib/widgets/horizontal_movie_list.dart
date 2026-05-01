@@ -41,11 +41,12 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
             thickness: 4,
             thumbVisibility: true,
             child: SizedBox(
-              height: 350, 
+              height: 380, 
               child: ListView.builder(
+                clipBehavior: Clip.none,
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.only(top: 15, bottom: 25),
                 itemCount: 10,
                 itemBuilder: (context, index) {
                   return MovieCard(
