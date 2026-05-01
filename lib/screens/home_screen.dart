@@ -51,8 +51,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           
                           const SizedBox(height: 60),
                           
-                          //  horizontal List
+                          /// HORIZONTAL MOVIE LISTTT
+                          //  Trending NOW (GLOBAL)
                           HorizontalMovieList(movies: movieProvider.trendingMoviesList, sectionTitle: "Trending Now",),
+                          const SizedBox(height: 15),
+
+                          // Popular in PH
+                          HorizontalMovieList(movies: movieProvider.popularPHMoviesList, sectionTitle: "Popular in Philippines",),
+                          const SizedBox(height: 15),
+
+                          // Upcoming MOvies
+                          HorizontalMovieList(movies: movieProvider.upcomingMoviesList, sectionTitle: "Upcoming Movies",),
                           
                           const SizedBox(height: 60),
                         ],

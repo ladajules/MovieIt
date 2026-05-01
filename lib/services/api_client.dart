@@ -85,6 +85,41 @@ class ApiClient {
             logger.e('ApiClient error (Movie Details), $e');
             rethrow;
         }   
-    }  
+    }
+
+    Future<List<Movie>> getPopularPHMovies() async {
+      try {
+        final response = await http.get(Uri.parse('$_baseUrl/popular-ph'));
+
+        if (response.statusCode == 200) {
+          List<dynamic> data = jsonDecode(response.body);
+          return data.map((json) => Movie.fromJson(json)).toList();
+        } else {
+          throw Exception('Failed to load popular movies in Philippines');
+        }
+
+      } catch (e) {
+        logger.e('ApiClient error (Popular PH), $e');
+        rethrow;
+      }
+    }
+
+    Future<List<Movie>> getUpcomingMovies() async {
+      try {
+        final response = await http.get(Uri.parse('$_baseUrl/upcoming'));
+
+        if (response.statusCode == 200) {
+          List<dynamic> data = jsonDecode(response.body);
+          return data.map((json) => Movie.fromJson(json)).toList();
+        } else {
+          throw Exception('Failed to load upcoming movies');
+        }
+
+      } catch (e) {
+        logger.e('ApiClient error (Upcoming), $e');
+        rethrow;
+      }
+
+    }
 }
 

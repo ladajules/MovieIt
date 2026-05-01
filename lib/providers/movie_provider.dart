@@ -10,6 +10,8 @@ class MovieProvider extends ChangeNotifier{
   List<Movie> _discoverMovies = [];
   List<Movie> _searchMovies = [];
   List<Movie> _top4Movies = [];
+  List<Movie> _popularPHMovies = [];
+  List<Movie> _upcomingMovies = [];
   MovieDetails? _movieDetails;
 
   bool _isLoading = false;
@@ -21,6 +23,8 @@ class MovieProvider extends ChangeNotifier{
   List<Movie> get discoverMoviesList => _discoverMovies;
   List<Movie> get searchMoviesList => _searchMovies;
   List<Movie> get top4MoviesList => _top4Movies;
+  List<Movie> get popularPHMoviesList => _popularPHMovies;
+  List<Movie> get upcomingMoviesList => _upcomingMovies;
   MovieDetails? get movieDetailsMap => _movieDetails;
   
   bool get isLoading => _isLoading;
@@ -33,11 +37,15 @@ class MovieProvider extends ChangeNotifier{
         apiClient.getTrendingMovies(),
         apiClient.getDiscoverMovies(),
         apiClient.getTop4(),
+        apiClient.getPopularPHMovies(),
+        apiClient.getUpcomingMovies(),
       ]);
 
       _trendingMovies = results[0];
       _discoverMovies = results[1];
       _top4Movies = results[2];
+      _popularPHMovies = results[3];
+      _upcomingMovies = results[4];
       _errorMessage = '';
     } catch (e){
       _errorMessage = 'Failed to load trending and discover movies';
