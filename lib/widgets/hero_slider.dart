@@ -4,6 +4,7 @@ import 'package:movieit/models/movie_models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:movieit/widgets/hover_action_btn.dart';
+import 'dart:async';
 
 class HeroSlider extends StatefulWidget {
   final List<Movie> movies;
@@ -17,55 +18,89 @@ class HeroSlider extends StatefulWidget {
 class _HeroSliderState extends State<HeroSlider> {
   late PageController _heroPageController;
   int _currentHeroPage = 0;
+  Timer? _autoScrollTimer;
   Logger log = Logger();
 
   @override
   void initState() {
     super.initState();
     _heroPageController = PageController(viewportFraction: 0.7, initialPage: 0);
+    _startAutoScroll();
   }
 
   @override
   void dispose() {
+    _autoScrollTimer?.cancel();
     _heroPageController.dispose();
     super.dispose();
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer?.cancel();
+    if (widget.movies.isEmpty) return;
+
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (_heroPageController.hasClients) {
+        int nextPage = (_currentHeroPage + 1) % widget.movies.length;
+        _heroPageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 600),  
+          curve: Curves.easeInOutQuart,
+        );
+      }
+    });
+  }
+
+  void _pauseAutoScroll() {
+    _autoScrollTimer?.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(
-          height: 500,
-          child: PageView.builder(
-            controller: _heroPageController,
-            itemCount: widget.movies.length,
-            onPageChanged: (int page) => setState(() => _currentHeroPage = page),
-            physics: const BouncingScrollPhysics(),
-            itemBuilder: (context, index) {
-              return AnimatedBuilder(
-                animation: _heroPageController,
-                builder: (context, child) {
-                  double value = 1.0;
-                  if (_heroPageController.position.haveDimensions) {
-                    value = _heroPageController.page! - index;
-                    value = (1 - (value.abs() * 0.2)).clamp(0.8, 1.0);
-                  } else {
-                    value = index == 0 ? 1.0 : 0.8;
-                  }
-                  return Center(
-                    child: Transform.scale(
-                      scale: value,
-                      child: Opacity(
-                        opacity: value.clamp(0.5, 1.0),
-                        child: child,
-                      ),
-                    ),
+        MouseRegion(
+          onEnter: (_) => _pauseAutoScroll(),
+          onExit: (_) => _startAutoScroll(),
+          child: Listener(
+            onPointerDown: (_) => _pauseAutoScroll(),
+            onPointerUp: (_) => _startAutoScroll(),
+            child: SizedBox(
+              height: 580,
+              child: PageView.builder(
+                controller: _heroPageController,
+                itemCount: widget.movies.length,
+                onPageChanged: (int page) {
+                  setState(() => _currentHeroPage = page);
+                  _startAutoScroll();
+                },
+                physics: const BouncingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  return AnimatedBuilder(
+                    animation: _heroPageController,
+                    builder: (context, child) {
+                      double value = 1.0;
+                      if (_heroPageController.position.haveDimensions) {
+                        value = _heroPageController.page! - index;
+                        value = (1 - (value.abs() * 0.2)).clamp(0.8, 1.0);
+                      } else {
+                        value = index == 0 ? 1.0 : 0.8;
+                      }
+                      return Center(
+                        child: Transform.scale(
+                          scale: value,
+                          child: Opacity(
+                            opacity: value.clamp(0.5, 1.0),
+                            child: child,
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildHeroCard(widget.movies[index]),
                   );
                 },
-                child: _buildHeroCard(widget.movies[index]),
-              );
-            },
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 30),
@@ -132,7 +167,7 @@ class _HeroSliderState extends State<HeroSlider> {
                         log.d("hero slider ${item.id} tapped");
                         context.push('/movie/${item.id}');
                       }),
-                      
+
                       const SizedBox(width: 15),
 
                       HoverActionBtn(label: 'Save', icon: Icons.bookmark_border_rounded, baseColor: Color(0xFF2D2D3A), onTap: () {

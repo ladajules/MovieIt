@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return SingleChildScrollView(
                       child: Column(
                         children: [
-                          const SizedBox(height: 180),
+                          const SizedBox(height: 140),
                           
                           //  hero Slider
                           HeroSlider(movies: movieProvider.top4MoviesList),
