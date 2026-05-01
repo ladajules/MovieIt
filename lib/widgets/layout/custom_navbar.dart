@@ -20,14 +20,37 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "MovieIT", 
-              style: GoogleFonts.bagelFatOne(color: Colors.white, fontSize: 20)
+            Row(
+              children: [
+                Image.asset(
+                  'icons/popcorn_icon.png',
+                  color: Colors.white,
+                  width: 30,
+                  height: 30,
+                ),
+                const SizedBox(width: 10,),
+
+                Text(
+                  "MovieIT", 
+                  style: GoogleFonts.bagelFatOne(color: Colors.white, fontSize: 20)
+                ),
+              ],
             ),
             _buildGlassNavPill(),
-            IconButton(
-              icon: Image.asset('icons/popcorn_icon.png'),
-              onPressed: () {},
+
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 28),
+                  onPressed: () {},
+                ),
+                const SizedBox(width: 10,),
+                
+                IconButton(
+                  icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 28),
+                  onPressed: () {},
+                ),
+              ],
             )
           ],
         ),
