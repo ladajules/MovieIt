@@ -215,43 +215,72 @@ class _InfoColumn extends StatelessWidget {
   }
 }
 
-class _WatchlistButton extends StatelessWidget {
+class _WatchlistButton extends StatefulWidget {
   final bool isInWatchlist;
   final VoidCallback? onTap;
+
   const _WatchlistButton({required this.isInWatchlist, this.onTap});
+
+  @override
+  State<_WatchlistButton> createState() => _WatchlistButtonState();
+}
+
+class _WatchlistButtonState extends State<_WatchlistButton> {
+  bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
-          onTap: onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: isInWatchlist ? const Color(0xFFA970FF) : Colors.white,
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isInWatchlist ? Icons.bookmark : Icons.bookmark_add_outlined,
-                  color: isInWatchlist ? Colors.white : Colors.black,
-                  size: 18,
+        MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: widget.onTap,
+            child: AnimatedScale(
+              scale: _isHovered ? 1.05 : 1.0,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  color: widget.isInWatchlist ? const Color(0xFFA970FF) : (_isHovered ? Colors.grey[200] : Colors.white),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: _isHovered
+                      ? [
+                          BoxShadow(
+                            color: widget.isInWatchlist
+                                ? const Color(0xFFA970FF).withOpacity(0.4)
+                                : Colors.black.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 5),
+                          )
+                        ]
+                      : [],
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  isInWatchlist ? 'In Watchlist' : 'Add to Watchlist',
-                  style: TextStyle(
-                    color: isInWatchlist ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      widget.isInWatchlist ? Icons.bookmark : Icons.bookmark_add_outlined,
+                      color: widget.isInWatchlist ? Colors.white : Colors.black,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      widget.isInWatchlist ? 'In Watchlist' : 'Add to Watchlist',
+                      style: TextStyle(
+                        color: widget.isInWatchlist ? Colors.white : Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
