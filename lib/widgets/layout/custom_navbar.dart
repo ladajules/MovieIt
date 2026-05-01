@@ -36,19 +36,24 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ],
             ),
+            
             _buildGlassNavPill(),
 
             Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 28),
-                  onPressed: () {},
+                _HoverActionIcon(
+                  icon: Icons.notifications_none_rounded,
+                  onTap: () {
+                    /// TODO: pop-up modal showing notifications
+                  },
                 ),
-                const SizedBox(width: 10,),
+                const SizedBox(width: 6,),
                 
-                IconButton(
-                  icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 28),
-                  onPressed: () {},
+                _HoverActionIcon(
+                  icon: Icons.settings_rounded,
+                  onTap: () {
+                    /// TODO: pop-up modal showing settings? 
+                  },
                 ),
               ],
             )
@@ -153,6 +158,50 @@ class _GlassNavItemState extends State<_GlassNavItem> {
                 size: 24,
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HoverActionIcon extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _HoverActionIcon({
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  State<_HoverActionIcon> createState() => _HoverActionIconState();
+}
+
+class _HoverActionIconState extends State<_HoverActionIcon> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      behavior: HitTestBehavior.opaque,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.all(10), 
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _isHovered ? const Color(0xFFAC66FF).withOpacity(0.2) : Colors.transparent,
+          ),
+          child: Icon(
+            widget.icon,
+            color: _isHovered ? Color(0xFFAC66FF) : Colors.white,
+            size: 28,
           ),
         ),
       ),
