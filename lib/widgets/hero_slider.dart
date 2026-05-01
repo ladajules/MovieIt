@@ -145,6 +145,8 @@ class _HeroSliderState extends State<HeroSlider> {
                   const SizedBox(height: 15),
                   Row(
                     children: [
+                      const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                      const SizedBox(width: 4),
                       Text(item.rating ?? 'N/A', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 18)),
                       const SizedBox(width: 15),
                       Text(item.year ?? 'N/A', style: const TextStyle(color: Colors.white70)),
