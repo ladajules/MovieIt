@@ -60,36 +60,38 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildGlassNavPill() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
+      borderRadius: BorderRadius.circular(50),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+        filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: const Color(0x33C3B1E1), 
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: const Color(0x33FFFFFF), width: 1),
+            color: const Color(0xFF1A1A1A).withOpacity(0.65), //0x33C3B1E1
+            borderRadius: BorderRadius.circular(50),
+            border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min, 
             children: [
-              IconButton(
-                
-                icon: Icon(Icons.home_rounded, color: activeCategory == 'Home' ? const Color(0xFFAC66FF) : Colors.white), 
-                onPressed: () => onTap('Home'),
+              _GlassNavItem(
+                icon: Icons.home_rounded, 
+                isActive: activeCategory == 'Home',
+                onTap: () => onTap('Home'),
               ),
-              const SizedBox(width: 40), 
-              IconButton(
-           
-                icon: Icon(Icons.search_rounded, color: activeCategory == 'Search' ? const Color(0xFFAC66FF) : Colors.white),
-                onPressed: () => onTap('Search'),
+              const SizedBox(width: 20,),
+
+              _GlassNavItem(
+                icon: Icons.search_rounded, 
+                isActive: activeCategory == 'Search',
+                onTap: () => onTap('Search'),
               ),
-              const SizedBox(width: 40),
-              IconButton(
-               
-                icon: Icon(Icons.bookmark_border, color: activeCategory == 'Watchlist' ? const Color(0xFFAC66FF) : Colors.white), 
-                onPressed: () => onTap('Watchlist'),
-              )
+              const SizedBox(width: 20,),
+              
+              _GlassNavItem(
+                icon: Icons.bookmark_border_rounded, 
+                isActive: activeCategory == 'Watchlist',
+                onTap: () => onTap('Watchlist'),
+              ),
             ],
           ),
         ),
@@ -98,5 +100,62 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(70);
+  Size get preferredSize => const Size.fromHeight(90);
+}
+
+class _GlassNavItem extends StatefulWidget {
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _GlassNavItem({
+    required this.icon,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  State<_GlassNavItem> createState() => _GlassNavItemState();
+}
+
+class _GlassNavItemState extends State<_GlassNavItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      behavior: HitTestBehavior.opaque,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+          decoration: BoxDecoration(
+            color: widget.isActive 
+                ? const Color(0xFFAC66FF).withOpacity(0.2) 
+                : (_isHovered ? const Color(0xFFAC66FF).withOpacity(0.2) : Colors.transparent),
+            borderRadius: BorderRadius.circular(40),
+            border: Border.all(
+              color: widget.isActive ? Colors.white.withOpacity(0.2) : Colors.transparent,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                widget.icon,
+                color: widget.isActive || _isHovered ? Color(0xFFAC66FF) : Colors.white.withOpacity(0.7),
+                size: 24,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
