@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:movieit/models/movie_models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:movieit/widgets/hover_action_btn.dart';
 
 class HeroSlider extends StatefulWidget {
   final List<Movie> movies;
@@ -127,20 +128,16 @@ class _HeroSliderState extends State<HeroSlider> {
                   const SizedBox(height: 35),
                   Row(
                     children: [
-                         _buildActionBtn('More Info', Icons.info_outline, Colors.white12, () {
-                          log.d("hero slider ${item.id} tapped");
-                          context.push('/movie/${item.id}');
-                        }),
+                      HoverActionBtn(label: 'More Info', icon: Icons.info_outline_rounded, baseColor: Colors.white12, onTap: () {
+                        log.d("hero slider ${item.id} tapped");
+                        context.push('/movie/${item.id}');
+                      }),
+                      
                       const SizedBox(width: 15),
 
-                      GestureDetector(
-                        onTap: () {
-                          /// TODO: add movie to watshlisht
-                        },
-                        child: _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A), (){
-                          log.d("praktis");
-                        }),
-                      ),
+                      HoverActionBtn(label: 'Save', icon: Icons.bookmark_border_rounded, baseColor: Color(0xFF2D2D3A), onTap: () {
+                        log.d("praktis");
+                      }),
                     ],
                   )
                 ],
@@ -188,17 +185,22 @@ class _HeroSliderState extends State<HeroSlider> {
       child: Text(text, style: const TextStyle(fontSize: 12)),
     );
   }
+}
 
-  Widget _buildActionBtn(String label, IconData icon, Color color, VoidCallback onTap) {
-    return ElevatedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 20, color: Colors.white),
-      label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+class _CertChip extends StatelessWidget {
+  final String label;
+  const _CertChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(4),
       ),
+      child: Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
     );
   }
 }
+

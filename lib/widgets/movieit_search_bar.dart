@@ -24,10 +24,11 @@ class _MovieItSearchBarState extends State<MovieItSearchBar> {
   Widget build(BuildContext context) {
     return Container(
         height: 48,
+        margin: const EdgeInsets.only(left: 14, right: 34),
         decoration: BoxDecoration(
             color: AppColors.black,
             borderRadius: BorderRadius.circular(32),        
-            border: Border.all(color: AppColors.softPeriwinkle, width: 1),
+            border: Border.all(color: AppColors.softPeriwinkle, width: 2),
         ),
         child: TextField(
             controller: _controller,

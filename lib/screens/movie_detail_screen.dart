@@ -62,7 +62,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     ),
                     SafeArea(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 8),
+                        padding: const EdgeInsets.only(left: 46, top: 8),
                         child: IconButton(
                           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
                           onPressed: () => context.canPop() ? context.pop() : context.go('/'),
@@ -73,7 +73,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 ),
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 48)),
+              const SliverToBoxAdapter(child: SizedBox(height: 46)),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 60),
