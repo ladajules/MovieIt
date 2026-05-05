@@ -8,6 +8,7 @@ class AppColors {
     static const wisteria = Color(0xFFC3B1E1); // softer purpol
     static const charcoal = Color(0xFF535353);  
     static const lavender = Color(0xFFE9EBF8); 
+    static const cardBody = Color(0xFF1E1E1E);
 
     static const white = Color(0xFFFFFFFF);
 }

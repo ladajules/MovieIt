@@ -103,8 +103,8 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
               
               _GlassNavItem(
                 icon: Icons.bookmark_border_rounded, 
-                isActive: activeCategory == 'Watchlist',
-                onTap: () => onTap('Watchlist'),
+                isActive: activeCategory == 'Planner',
+                onTap: () => onTap('Planner'),
               ),
             ],
           ),

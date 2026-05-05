@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:movieit/providers/movie_provider.dart';
 import 'package:movieit/screens/home_screen.dart';
 import 'package:movieit/screens/search_screen.dart';
+import 'package:movieit/screens/planner_screen.dart';
 import 'package:movieit/screens/movie_detail_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:movieit/widgets/layout/custom_navbar.dart';
@@ -23,7 +24,7 @@ final GoRouter _router = GoRouter(
       builder: (context, state, child) {
         String activeCategory = 'Home';
         if (state.fullPath == '/search') activeCategory = 'Search';
-        if (state.fullPath == '/watchlist') activeCategory = 'Watchlist';
+        if (state.fullPath == '/planner') activeCategory = 'Planner';
 
         return Scaffold(
           backgroundColor: Colors.black,
@@ -33,7 +34,7 @@ final GoRouter _router = GoRouter(
             onTap: (category) {
                if (category == 'Home') context.go('/');
                if (category == 'Search') context.go('/search');
-               if (category == 'Watchlist') context.go('/watchlist');
+               if (category == 'Planner') context.go('/planner');
             },
           ),
           body: child,
@@ -49,10 +50,8 @@ final GoRouter _router = GoRouter(
           builder: (context, state) => const SearchScreen(),
         ),
         GoRoute(
-          path: '/watchlist',
-          builder: (context, state) => const Center(
-            child: Text("Watchlist coming soon...", style: TextStyle(color: Colors.white))
-          ),
+          path: '/planner',
+          builder: (context, state) => const PlannerScreen(),
         ),
       ],
     ),
