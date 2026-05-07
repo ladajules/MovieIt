@@ -21,62 +21,74 @@ class PlannerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final safeMoviesList = watchlistMovies ?? [];
 
-    return Scaffold(
-      backgroundColor: AppColors.black,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1000),
-            child: CustomScrollView(
-              slivers: [
-                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+    // 1. Root Container provides the gradient background
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2E0A52), Colors.black, Color(0xFF032D6C)],
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // 2. Transparent to see the gradient
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              child: CustomScrollView(
+                slivers: [
+                  const SliverToBoxAdapter(child: SizedBox(height: 32)),
 
-                // stats dashbaord
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: _StatsSection(),
+                  // stats dashboard
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: _StatsSection(),
+                    ),
                   ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-                // calendar
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: CalendarSection(),
+                  // calendar
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: CalendarSection(),
+                    ),
                   ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-                // pending review or notes
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: _PendingReviewCard(),
+                  // pending review or notes
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: _PendingReviewCard(),
+                    ),
                   ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
 
-                // watchlist 
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    child: Text(
-                      "Your Watchlist",
-                      style: GoogleFonts.poppins(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                  // watchlist 
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      child: Text(
+                        "Your Watchlist",
+                        style: GoogleFonts.poppins(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-                _WatchlistHorizontalList(movies: safeMoviesList),
-                
-                const SliverToBoxAdapter(child: SizedBox(height: 60)),
-              ],
+                  _WatchlistHorizontalList(movies: safeMoviesList),
+                  
+                  const SliverToBoxAdapter(child: SizedBox(height: 60)),
+                ],
+              ),
             ),
           ),
         ),
@@ -240,4 +252,5 @@ class _WatchlistGrid extends StatelessWidget {
       ),
     );
   }
+
 }

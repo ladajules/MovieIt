@@ -4,11 +4,14 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:movieit/models/movie_details_model.dart';
 import 'package:movieit/models/movie_models.dart';
+import 'package:movieit/models/sources_model.dart';
 
 
 class ApiClient {
     
   static const String _baseUrl = 'http://localhost:3000/api/movies';
+  static const String _baseUrlWatchmode = 'http://localhost:3000/api/watchmode';
+
     var logger = Logger ();
   
     Future<List<Movie>> getTrendingMovies() async {
@@ -121,5 +124,26 @@ class ApiClient {
       }
 
     }
+
+    Future<List<Sources>> getSources(String tmdbId) async {
+      try{
+        final response = await http.get(Uri.parse('$_baseUrlWatchmode/$tmdbId'));
+
+        if (response.statusCode == 200){
+          List<dynamic> data = jsonDecode(response.body);
+          return data.map((json) => Sources.fromJson(json)).toList();
+        } else if (response.statusCode == 204) {
+          return []; // Gracefully return an empty list when no sources are found
+        } else {
+          throw Exception('Failed to load sources: ${response.statusCode}');
+        }
+
+      } catch (e){
+        logger.e('ApiClient error (Sources), $e');
+        rethrow;
+      }
+    }
+
+
 }
 

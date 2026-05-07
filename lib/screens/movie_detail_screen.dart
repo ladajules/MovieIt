@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:movieit/models/sources_model.dart';
+import 'package:movieit/widgets/where_to_watch_section.dart';
 import '../models/movie_details_model.dart';
 import '../widgets/movie_detail_hero_section.dart';
 import '../widgets/cast_grid.dart';
@@ -16,12 +18,14 @@ class MovieDetailScreen extends StatefulWidget {
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
   late Future<MovieDetails> _movieFuture;
+  late Future<List<Sources>> _sourcesFuture;
   bool _isInWatchlist = false;
 
   @override
   void initState() {
     super.initState();
     _movieFuture = ApiClient().getMovieDetails(widget.movieId.toString());
+    _sourcesFuture = ApiClient().getSources(widget.movieId.toString());
   }
 
   void _toggleWatchlist(MovieDetails movie) {
@@ -44,6 +48,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               message: snapshot.error?.toString() ?? 'Something went wrong.',
               onRetry: () => setState(() {
                 _movieFuture = ApiClient().getMovieDetails(widget.movieId.toString());
+                _sourcesFuture = ApiClient().getSources(widget.movieId.toString());
               }),
             );
           }
@@ -70,6 +75,22 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                       ),
                     ),
                   ],
+                ),
+              ),
+
+               const SliverToBoxAdapter(child: SizedBox(height: 46))  ,
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 60),
+                  child: FutureBuilder<List<Sources>>(
+                    future: _sourcesFuture,
+                    builder: (context, sourcesSnapshot) {
+                      if (sourcesSnapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator(color: Color(0xFFA970FF)));
+                      }
+                      return WhereToWatchSection(sources: sourcesSnapshot.data);
+                    },
+                  ),
                 ),
               ),
 
