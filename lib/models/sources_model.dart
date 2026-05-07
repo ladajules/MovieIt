@@ -19,9 +19,7 @@ class Sources{
     }
 
     if (rawLogo != null) {
-      // Safely encode the URL so it can be passed as a query parameter
       final encodedUrl = Uri.encodeComponent(rawLogo);
-      // Wrap it in your new backend proxy route
       rawLogo = 'http://localhost:3000/api/watchmode/image-proxy?url=$encodedUrl';
     }
 
