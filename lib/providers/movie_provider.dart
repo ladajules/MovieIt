@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:movieit/models/movie_details_model.dart';
 import 'package:movieit/models/movie_models.dart';
+import 'package:movieit/models/sources_model.dart';
 import 'package:movieit/services/api_client.dart';
 
 class MovieProvider extends ChangeNotifier{
@@ -13,6 +14,7 @@ class MovieProvider extends ChangeNotifier{
   List<Movie> _popularPHMovies = [];
   List<Movie> _upcomingMovies = [];
   MovieDetails? _movieDetails;
+  List<Sources>? _sourcesList = [];
 
   bool _isLoading = false;
   String _errorMessage = '';
@@ -26,6 +28,8 @@ class MovieProvider extends ChangeNotifier{
   List<Movie> get popularPHMoviesList => _popularPHMovies;
   List<Movie> get upcomingMoviesList => _upcomingMovies;
   MovieDetails? get movieDetailsMap => _movieDetails;
+  List<Sources>? get sourcesList => _sourcesList;
+  
   
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
@@ -73,6 +77,7 @@ class MovieProvider extends ChangeNotifier{
 
   Future<void> LoadMovieDetails(int movieId) async {
     _setLoading(true);  
+    _movieDetails = null; 
     try{
       _movieDetails = await apiClient.getMovieDetails(movieId.toString());
       _errorMessage = '';
@@ -83,12 +88,28 @@ class MovieProvider extends ChangeNotifier{
     }
   }
 
+  Future<void> loadSources(String tmdbId) async {
+    _setLoading(true);
+    _sourcesList = null;
+    try{
+      _sourcesList = await apiClient.getSources(tmdbId);
+      _errorMessage = '';
+    } catch(e){
+      _errorMessage = 'Failed to load sources';
+    } finally{
+      _setLoading(false);
+    }
+  }
+
+  
+
 
   void _setLoading(bool value){
     _isLoading = value;
     notifyListeners();
   
   }
+
 
 
 }
