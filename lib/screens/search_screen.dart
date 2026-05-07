@@ -51,64 +51,74 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-            child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+    return Container(
+      width: double.infinity, 
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2E0A52), Colors.black, Color(0xFF032D6C)],
+        ),
+      ),
+      child: Scaffold(
+          backgroundColor: Colors.transparent, // 2. This lets the gradient shine through
+          body: SafeArea(
+              child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // REMOVED: _buildBackground() is no longer here!
+
+                        const SizedBox(height: 16),
+                        
                         // search bar
                         MovieItSearchBar(onChanged: _onSearch),
                         const SizedBox(height: 16),
 
-                        // filter btn and genre chips
-
                         // results grid
-                        const SizedBox(height: 16),
+                        Consumer<MovieProvider>(
+                          builder: (context, movieProvider, child){
+                            if (movieProvider.isLoading){
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                            
+                             if(movieProvider.errorMessage.isNotEmpty){
+                              return Center(child: Text(movieProvider.errorMessage, style: const TextStyle(color: Colors.red, fontSize: 18)));
+                            }
+                            
+                            final movieListToDisplay = _query.isEmpty ? movieProvider.discoverMoviesList : movieProvider.searchMoviesList;
 
-                      Consumer<MovieProvider>(
-                        builder: (context, movieProvider, child){
-                          if (movieProvider.isLoading){
-                            return const Center(child: CircularProgressIndicator());
+                            if (movieListToDisplay.isEmpty && _query.isNotEmpty){
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Lottie.asset(
+                                      'assets/animations/Search.json',  
+                                      width: 250,
+                                      height: 250,
+                                      fit: BoxFit.fill,
+                                    ),
+                                  const SizedBox(height: 20),
+                                  const Text(
+                                    "We couldn't find any movies.",
+                                    style: TextStyle(color: Colors.white, fontSize: 18),
+                                    )
+                                  ],
+                                ),
+                              );
+                            }
+
+                            return SearchResultGrid(movies: movieListToDisplay);
                           }
-                          
-                           if(movieProvider.errorMessage.isNotEmpty){
-                            return Center(child: Text(movieProvider.errorMessage, style: const TextStyle(color: Colors.red, fontSize: 18)));
-                          }
-                          final movieListToDisplay = _query.isEmpty ? movieProvider.discoverMoviesList : movieProvider.searchMoviesList;
-
-                          if (movieListToDisplay.isEmpty && _query.isNotEmpty){
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Lottie.asset(
-                                    'assets/animations/Search.json',  
-                                    width: 250,
-                                    height: 250,
-                                    fit: BoxFit.fill,
-                                  ),
-                                const SizedBox(height: 20),
-                                const Text(
-                                  "We couldn't find any movies.",
-                                  style: TextStyle(color: Colors.white, fontSize: 18),
-                                  )
-                                ],
-                              ),
-                            );
-                          }
-
-                          return SearchResultGrid(movies: movieListToDisplay);
-
-                        }
-                      )
-
-                    ],
-                ),
-            ),
-        ),
+                        )
+                      ],
+                  ),
+              ),
+          ),
+      ),
     );
   }
 
