@@ -128,131 +128,132 @@ class LocalDbService {
     final now = DateTime.now();
 
     //  ============= FIRE STREAK STATE AND 2/4 MONTHLY GOAL TEST ======================
-    // final today = now;
-    // final lastWeek = now.subtract(const Duration(days: 7));
-    // final twoWeeksAgo = now.subtract(const Duration(days: 14));
-    // final lastMonth = DateTime(now.year, now.month - 1, 15);
-
-    // final mockEvents = [
-    //   ScheduledEvent(
-    //     id: 'test_1',
-    //     movieId: "101",
-    //     movieTitle: 'Current Week Movie',
-    //     posterUrl: 'https://via.placeholder.com/150', // Added Poster URL
-    //     platform: 'Netflix',
-    //     scheduledDate: today,
-    //     runtime: 120,
-    //     genres: ['Action'],
-    //     isReviewed: false,
-    //     isWatched: true, 
-    //   ),
-    //   ScheduledEvent(
-    //     id: 'test_2',
-    //     movieId: "102",
-    //     movieTitle: 'Last Week Movie',
-    //     posterUrl: 'https://via.placeholder.com/150', // Added Poster URL
-    //     platform: 'Prime',
-    //     scheduledDate: lastWeek,
-    //     runtime: 90,
-    //     genres: ['Drama'],
-    //     isReviewed: true,
-    //     isWatched: true, 
-    //   ),
-    //   ScheduledEvent(
-    //     id: 'test_3',
-    //     movieId: "103",
-    //     movieTitle: 'Two Weeks Ago Movie',
-    //     posterUrl: 'https://via.placeholder.com/150', // Added Poster URL
-    //     platform: 'Local File',
-    //     scheduledDate: twoWeeksAgo,
-    //     runtime: 105,
-    //     genres: ['Sci-Fi'],
-    //     isReviewed: false,
-    //     isWatched: true, 
-    //   ),
-    //   ScheduledEvent(
-    //     id: 'test_4',
-    //     movieId: "104",
-    //     movieTitle: 'Last Month Movie',
-    //     posterUrl: 'https://via.placeholder.com/150', // Added Poster URL
-    //     platform: 'Netflix',
-    //     scheduledDate: lastMonth,
-    //     runtime: 110,
-    //     genres: ['Thriller'],
-    //     isReviewed: true,
-    //     isWatched: true, 
-    //   ),
-    // ];
-
-    // for (var event in mockEvents) {
-    //   await db.scheduleEvent(event);
-    // }
-
-    //  =============COLD STREAK STATE AND COMPLETD MONTHLY GOAL TEST======================
-    await _eventsBox.clear();
-
-    // 2. Set up dates that are ALL in the current month, 
-    // but restricted to just this week and last week.
-    final today = now; 
-    final twoDaysAgo = now.subtract(const Duration(days: 2)); 
-    final fiveDaysAgo = now.subtract(const Duration(days: 5)); 
-    final sevenDaysAgo = now.subtract(const Duration(days: 7)); 
+    final today = now;
+    final lastWeek = now.subtract(const Duration(days: 7));
+    final twoWeeksAgo = now.subtract(const Duration(days: 14));
+    final lastMonth = DateTime(now.year, now.month - 1, 15);
 
     final mockEvents = [
       ScheduledEvent(
         id: 'test_1',
         movieId: "101",
-        movieTitle: 'The Matrix',
-        posterUrl: 'https://via.placeholder.com/150',
+        movieTitle: 'Current Week Movie',
+        posterUrl: 'https://via.placeholder.com/150', // Added Poster URL
         platform: 'Netflix',
         scheduledDate: today,
-        runtime: 136,
-        genres: ['Action', 'Sci-Fi'],
+        runtime: 120,
+        genres: ['Action'],
         isReviewed: false,
-        isWatched: true, // +1 Month, +1 Week Streak
+        isWatched: true, 
       ),
       ScheduledEvent(
         id: 'test_2',
         movieId: "102",
-        movieTitle: 'Inception',
-        posterUrl: 'https://via.placeholder.com/150',
+        movieTitle: 'Last Week Movie',
+        posterUrl: 'https://via.placeholder.com/150', // Added Poster URL
         platform: 'Prime',
-        scheduledDate: twoDaysAgo,
-        runtime: 148,
-        genres: ['Action', 'Thriller'],
+        scheduledDate: lastWeek,
+        runtime: 90,
+        genres: ['Drama'],
         isReviewed: true,
-        isWatched: true, // +1 Month, (Same Week Streak)
+        isWatched: true, 
       ),
       ScheduledEvent(
         id: 'test_3',
         movieId: "103",
-        movieTitle: 'Dune',
-        posterUrl: 'https://via.placeholder.com/150',
-        platform: 'Max',
-        scheduledDate: fiveDaysAgo,
-        runtime: 155,
-        genres: ['Sci-Fi', 'Adventure'],
+        movieTitle: 'Two Weeks Ago Movie',
+        posterUrl: 'https://via.placeholder.com/150', // Added Poster URL
+        platform: 'Local File',
+        scheduledDate: twoWeeksAgo,
+        runtime: 105,
+        genres: ['Sci-Fi'],
         isReviewed: false,
-        isWatched: true, // +1 Month, +1 Week Streak (Last Week)
+        isWatched: true, 
       ),
       ScheduledEvent(
         id: 'test_4',
         movieId: "104",
-        movieTitle: 'Arrival',
-        posterUrl: 'https://via.placeholder.com/150',
+        movieTitle: 'Last Month Movie',
+        posterUrl: 'https://via.placeholder.com/150', // Added Poster URL
         platform: 'Netflix',
-        scheduledDate: sevenDaysAgo,
-        runtime: 116,
-        genres: ['Sci-Fi', 'Drama'],
+        scheduledDate: lastMonth,
+        runtime: 110,
+        genres: ['Thriller'],
         isReviewed: true,
-        isWatched: true, // +1 Month, (Same Week Streak)
+        isWatched: true, 
       ),
     ];
 
     for (var event in mockEvents) {
       await db.scheduleEvent(event);
     }
+
+    //  =============COLD STREAK STATE AND COMPLETD MONTHLY GOAL TEST======================
+  //   await _eventsBox.clear();
+
+  //   // 2. Set up dates that are ALL in the current month, 
+  //   // but restricted to just this week and last week.
+  //   final today = now; 
+  //   final twoDaysAgo = now.subtract(const Duration(days: 2)); 
+  //   final fiveDaysAgo = now.subtract(const Duration(days: 5)); 
+  //   final sevenDaysAgo = now.subtract(const Duration(days: 7)); 
+
+  //   final mockEvents = [
+  //     ScheduledEvent(
+  //       id: 'test_1',
+  //       movieId: "101",
+  //       movieTitle: 'The Matrix',
+  //       posterUrl: 'https://via.placeholder.com/150',
+  //       platform: 'Netflix',
+  //       scheduledDate: today,
+  //       runtime: 136,
+  //       genres: ['Sci-Fi'],
+  //       isReviewed: false,
+  //       isWatched: true, // +1 Month, +1 Week Streak
+  //     ),
+  //     ScheduledEvent(
+  //       id: 'test_2',
+  //       movieId: "102",
+  //       movieTitle: 'Inception',
+  //       posterUrl: 'https://via.placeholder.com/150',
+  //       platform: 'Netflix',
+  //       scheduledDate: twoDaysAgo,
+  //       runtime: 148,
+  //       genres: ['Sci-Fi'],
+  //       isReviewed: true,
+  //       isWatched: true, // +1 Month, (Same Week Streak)
+  //     ),
+  //     ScheduledEvent(
+  //       id: 'test_3',
+  //       movieId: "103",
+  //       movieTitle: 'Dune',
+  //       posterUrl: 'https://via.placeholder.com/150',
+  //       platform: 'Netflix',
+  //       scheduledDate: fiveDaysAgo,
+  //       runtime: 155,
+  //       genres: ['Sci-Fi'],
+  //       isReviewed: false,
+  //       isWatched: true, // +1 Month, +1 Week Streak (Last Week)
+  //     ),
+  //     ScheduledEvent(
+  //       id: 'test_4',
+  //       movieId: "104",
+  //       movieTitle: 'Arrival',
+  //       posterUrl: 'https://via.placeholder.com/150',
+  //       platform: 'Netflix',
+  //       scheduledDate: sevenDaysAgo,
+  //       runtime: 116,
+  //       genres: ['Sci-Fi'],
+  //       isReviewed: true,
+  //       isWatched: true, // +1 Month, (Same Week Streak)
+  //     ),
+  //   ];
+
+  //   for (var event in mockEvents) {
+  //     await db.scheduleEvent(event);
+  //   }
+
+
+
   }
-
-
 }

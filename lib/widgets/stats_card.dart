@@ -1,92 +1,123 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
 import 'surface_card.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_styles.dart';
-
-class PlannerMockData {
-  static const int nightsPlanned = 8;
-  static const String totalRuntime = '19h';
-  static const String avgRating = '4.2';
-  static const int pending = 2;
-  static const int streakWeeks = 5;
-  static const int personalBest = 8;
-  static const int monthlyGoalCurrent = 2;
-  static const int monthlyGoalTarget = 4;
-
-  static const List<Map<String, String>> genres = [
-    {'name': 'Sci-Fi', 'pct': '82'},
-    {'name': 'Drama', 'pct': '64'},
-    {'name': 'Thriller', 'pct': '41'},
-  ];
-
-  static const List<Map<String, String>> platforms = [
-    {'name': 'Netflix', 'pct': '58'},
-    {'name': 'Prime', 'pct': '27'},
-    {'name': 'Local', 'pct': '15'},
-  ];
-
-  static const List<Map<String, String>> recentActivity = [
-    {'title': 'The Batman', 'date': 'Yesterday', 'rating': '4.0'},
-    {'title': 'Poor Things', 'date': 'May 4', 'rating': '4.5'},
-    {'title': 'Oppenheimer', 'date': 'May 1', 'rating': '5.0'},
-    {'title': 'Arrival', 'date': 'Apr 28', 'rating': '4.2'},
-  ];
-
-  static final Map<DateTime, List<Map<String, String>>> scheduledMovies = {
-    DateTime.now().add(const Duration(days: 2)): [
-      {'title': 'Dune: Part Two', 'platform': 'Netflix', 'time': '8:00 PM'},
-    ],
-    DateTime.now().add(const Duration(days: 5)): [
-      {'title': 'The Batman', 'platform': 'Local File', 'time': '7:30 PM'},
-    ],
-  };
-
-  static const List<Map<String, dynamic>> watchlist = [
-    {'title': 'Blade Runner 2049', 'year': '2017', 'color1': Color(0xFF6B21A8), 'color2': Color(0xFF1E3A5F)},
-    {'title': 'Arrival', 'year': '2016', 'color1': Color(0xFF0F4C6B), 'color2': Color(0xFF1A5C4A)},
-    {'title': 'Oppenheimer', 'year': '2023', 'color1': Color(0xFF7C3A00), 'color2': Color(0xFF4A1A00)},
-    {'title': 'Everything Everywh...', 'year': '2022', 'color1': Color(0xFF8B1A5C), 'color2': Color(0xFF3D0A2E)},
-    {'title': 'The Batman', 'year': '2022', 'color1': Color(0xFF1A1A8B), 'color2': Color(0xFF0A0A4A)},
-    {'title': 'Poor Things', 'year': '2023', 'color1': Color(0xFF0A5C3A), 'color2': Color(0xFF063D27)},
-  ];
-}
+import '../models/scheduled_event.dart';
+import '../services/local_db_service.dart';
+import '../utils/stats_engine.dart';
 
 class StatsCard extends StatelessWidget {
   const StatsCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SurfaceCard(
-      headerLeft: Text('Your stats', style: AppStyles.heading(size: 18)),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return ValueListenableBuilder<Box<ScheduledEvent>>(
+      valueListenable: LocalDbService().listenToEvents(),
+      builder: (context, box, _) {
+        final engine = StatsEngine(box);
+        
+        final nightsPlanned = engine.getTotalNightsPlanned();
+        final totalMins = engine.getTotalRuntimeMinutes();
+        final avgRating = engine.getAverageRating();
+        final pending = engine.getPendingReviewCount();
+        final topGenres = engine.getTopGenresWithPercentages();
+
+        final hours = totalMins ~/ 60;
+        final mins = totalMins % 60;
+        final runtimeStr = hours > 0 ? '${hours}h ${mins > 0 ? '${mins}m' : ''}' : '${mins}m';
+
+        return SurfaceCard(
+          headerLeft: Text('Your stats', style: AppStyles.heading(size: 18)),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Expanded(child: _MetricBox(value: '$nightsPlanned', label: 'PLANNED')),
+                const SizedBox(width: 10),
+                Expanded(child: _MetricBox(value: runtimeStr, label: 'RUNTIME')),
+                const SizedBox(width: 10),
+                Expanded(child: _MetricBox(value: avgRating.toStringAsFixed(1), label: 'AVG RATING')),
+                const SizedBox(width: 10),
+                Expanded(child: _MetricBox(value: '$pending', label: 'PENDING')),
+              ]),
+              const SizedBox(height: 20),
+              
+              Text('TOP GENRES', style: AppStyles.label()),
+              const SizedBox(height: 12),
+              
+              if (topGenres.isEmpty)
+                Text('No movies scheduled yet.', style: AppStyles.body())
+              else if (topGenres.length == 1 && topGenres.first.value == 100.0)
+                _SingleItemHero(label: topGenres.first.key)
+              else
+                ...topGenres.map((g) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _PercentageBar(label: g.key, pct: g.value),
+                )),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _MetricBox extends StatelessWidget {
+  final String value;
+  final String label;
+  const _MetricBox({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      decoration: BoxDecoration(
+        color: AppColors.plannerSurface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Column(
         children: [
-          Row(children: [
-            const Expanded(child: _MetricBox(value: '${PlannerMockData.nightsPlanned}', label: 'PLANNED')),
-            const SizedBox(width: 10),
-            const Expanded(child: _MetricBox(value: PlannerMockData.totalRuntime, label: 'RUNTIME')),
-            const SizedBox(width: 10),
-            const Expanded(child: _MetricBox(value: PlannerMockData.avgRating, label: 'AVG RATING')),
-            const SizedBox(width: 10),
-            const Expanded(child: _MetricBox(value: '${PlannerMockData.pending}', label: 'PENDING')),
-          ]),
-          const SizedBox(height: 20),
-          Text('TOP GENRES', style: AppStyles.label()),
-          const SizedBox(height: 12),
-          ...PlannerMockData.genres.map((g) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _GenreStackedBar(label: g['name']!, pct: double.parse(g['pct']!)),
-          )),
+          Text(value, style: AppStyles.value(size: 22), maxLines: 1, overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 4),
+          Text(label, style: AppStyles.label(size: 9), textAlign: TextAlign.center),
         ],
       ),
     );
   }
 }
 
-class _GenreStackedBar extends StatelessWidget {
+class _SingleItemHero extends StatelessWidget {
+  final String label;
+  const _SingleItemHero({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      decoration: BoxDecoration(
+        color: AppColors.plannerSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Column(
+        children: [
+          Text('100%', style: AppStyles.value(size: 42, color: AppColors.softPeriwinkle)),
+          const SizedBox(height: 4),
+          Text(label.toUpperCase(), style: AppStyles.heading(size: 14, color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+}
+
+class _PercentageBar extends StatelessWidget {
   final String label;
   final double pct;
-  const _GenreStackedBar({required this.label, required this.pct});
+  const _PercentageBar({required this.label, required this.pct});
 
   @override
   Widget build(BuildContext context) {
@@ -103,34 +134,13 @@ class _GenreStackedBar extends StatelessWidget {
         const SizedBox(height: 6),
         LayoutBuilder(builder: (ctx, c) => Stack(children: [
           Container(height: 7, decoration: BoxDecoration(color: AppColors.dividerSubtle, borderRadius: BorderRadius.circular(4))),
-          Container(height: 7, width: c.maxWidth * (pct / 100), decoration: BoxDecoration(color: AppColors.softPeriwinkle, borderRadius: BorderRadius.circular(4))),
+          Container(
+            height: 7, 
+            width: c.maxWidth * (pct / 100), 
+            decoration: BoxDecoration(color: AppColors.softPeriwinkle, borderRadius: BorderRadius.circular(4))
+          ),
         ])),
       ],
-    );
-  }
-}
-
-class _MetricBox extends StatelessWidget {
-  final String value;
-  final String label;
-  const _MetricBox({required this.value, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
-      decoration: BoxDecoration(
-        color: AppColors.plannerSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Column(
-        children: [
-          Text(value, style: AppStyles.value(size: 20)),
-          const SizedBox(height: 4),
-          Text(label, style: AppStyles.label(size: 10), textAlign: TextAlign.center),
-        ],
-      ),
     );
   }
 }
