@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:movieit/models/scheduled_event.dart';
+import 'package:movieit/models/user_preferences.dart';
+import 'package:movieit/models/user_stats.dart';
+import 'package:movieit/models/watchlist_item.dart';
+
 import 'package:movieit/providers/movie_provider.dart';
 import 'package:movieit/screens/home_screen.dart';
 import 'package:movieit/screens/search_screen.dart';
@@ -8,7 +15,20 @@ import 'package:go_router/go_router.dart';
 import 'package:movieit/widgets/layout/custom_navbar.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(ScheduledEventAdapter());
+  Hive.registerAdapter(UserPreferencesAdapter());
+  Hive.registerAdapter(UserStatsAdapter());
+  Hive.registerAdapter(WatchlistItemAdapter());
+
+  await Hive.openBox<ScheduledEvent>('scheduled_event');
+  await Hive.openBox<UserPreferences>('user_preferences');
+  await Hive.openBox<UserStats>('user_stats');
+  await Hive.openBox<WatchlistItem>('watchlist');
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => MovieProvider(),

@@ -6,6 +6,10 @@ import 'package:logger/logger.dart';
 import 'package:movieit/widgets/hover_action_btn.dart';
 import 'dart:async';
 
+import '../services/local_db_service.dart';
+import '../models/watchlist_item.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
 class HeroSlider extends StatefulWidget {
   final List<Movie> movies;
 
@@ -20,6 +24,7 @@ class _HeroSliderState extends State<HeroSlider> {
   int _currentHeroPage = 0;
   Timer? _autoScrollTimer;
   Logger log = Logger();
+  final LocalDbService _dbService = LocalDbService();
 
   @override
   void initState() {
@@ -172,9 +177,35 @@ class _HeroSliderState extends State<HeroSlider> {
 
                       const SizedBox(width: 15),
 
-                      HoverActionBtn(label: 'Save', icon: Icons.bookmark_border_rounded, baseColor: Color(0xFF2D2D3A), onTap: () {
-                        log.d("praktis");
-                      }),
+                      ValueListenableBuilder<Box<WatchlistItem>>(
+                        valueListenable: _dbService.listenToWatchlist(),
+                        builder: (context, box, child) {
+                          final isInWatchlist = box.containsKey(item.id);
+                          
+                          return HoverActionBtn(
+                            label: isInWatchlist ? 'Saved' : 'Save',
+                            icon: isInWatchlist ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                            baseColor: isInWatchlist ? const Color(0xFFA970FF) : const Color(0xFF2D2D3A),
+                            onTap: () async {
+                              String path = item.posterUrl ?? '';
+                              if (path.startsWith('http')) {
+                                path = '/${Uri.parse(path).pathSegments.last}';
+                              }
+
+                              final watchlistItem = WatchlistItem(
+                                tmdbId: item.id,
+                                title: item.title,
+                                posterPath: path,
+                                runtimeMinutes: item.runtime ?? 0,
+                                genreIds: item.genreIds ?? [],    
+                                cachedAt: DateTime.now().toUtc(),
+                              );
+                              
+                              await _dbService.toggleWatchlist(watchlistItem);
+                            },
+                          );
+                        },
+                      ),
                     ],
                   )
                 ],
