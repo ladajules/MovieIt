@@ -57,7 +57,7 @@ class StatsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SurfaceCard(
-      headerLeft: Text('Your stats', style: AppStyles.heading(size: 14)),
+      headerLeft: Text('Your stats', style: AppStyles.heading(size: 18)),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

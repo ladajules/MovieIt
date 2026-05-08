@@ -12,6 +12,8 @@ import '../widgets/stats_card.dart';
 import '../widgets/streak_card.dart';
 import '../widgets/watchlist_section.dart';
 
+import '../services/local_db_service.dart';
+
 class PlannerScreen extends StatelessWidget {
   const PlannerScreen({super.key});
 
@@ -57,6 +59,22 @@ class _TopBar extends StatelessWidget {
       child: Row(
         children: [
           Text('My Planner', style: AppStyles.value(size: 26)),
+
+          // TO REMVOE SOOONESTTT
+          const SizedBox(width: 16),
+          IconButton(
+            icon: const Icon(Icons.bug_report, color: Colors.redAccent),
+            onPressed: () async {
+              await LocalDbService().injectTestData();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Test Data Injected!')),
+                );
+              }
+            },
+          ),
+          // ======================================================================
+
           const Spacer(),
           Container(
             width: 36,
@@ -191,3 +209,4 @@ class ScheduleFab extends StatelessWidget {
     );
   }
 }
+

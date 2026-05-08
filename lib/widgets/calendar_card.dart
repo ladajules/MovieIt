@@ -28,12 +28,7 @@ class _CalendarCardState extends State<CalendarCard> {
   }
 
   DateTime _norm(DateTime d) => DateTime(d.year, d.month, d.day);
-
-  // List<ScheduledEvent> _eventsFor(DateTime day, Box<ScheduledEvent> box) {
-  //   final n = _norm(day);
-  //   return box.values.where((e) => _norm(e.scheduledDate) == n).toList();
-  // }
-
+  
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Box<ScheduledEvent>>(

@@ -36,6 +36,9 @@ class ScheduledEvent extends HiveObject {
   @HiveField(10)
   String? note;
 
+  @HiveField(11)
+  bool isWatched;
+
   ScheduledEvent({
     required this.id,
     required this.movieId,
@@ -48,5 +51,6 @@ class ScheduledEvent extends HiveObject {
     this.isReviewed = false,
     this.rating,
     this.note,
+    this.isWatched = false,
   });
 }
