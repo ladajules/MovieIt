@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
@@ -7,13 +6,16 @@ import 'package:movieit/models/movie_models.dart';
 import 'package:movieit/models/sources_model.dart';
 
 
+
+
 class ApiClient {
-    
+   
   static const String _baseUrl = 'http://localhost:3000/api/movies';
   static const String _baseUrlWatchmode = 'http://localhost:3000/api/watchmode';
 
+
     var logger = Logger ();
-  
+ 
     Future<List<Movie>> getTrendingMovies() async {
         try{
             final response = await http.get(Uri.parse('$_baseUrl/trending'));
@@ -27,8 +29,9 @@ class ApiClient {
             logger.e('ApiClient error (Trending), $e');
             rethrow;
         }
-        
+       
     }
+
 
     Future<List<Movie>> getTop4() async {
       try{
@@ -45,12 +48,13 @@ class ApiClient {
       }
     }
 
+
     Future<List<Movie>> getDiscoverMovies() async{
         try{
             final response = await http.get(Uri.parse('$_baseUrl/discover'));
             if (response.statusCode == 200){
               List<dynamic> data = jsonDecode(response.body);
-              return data.map((json) => Movie.fromJson(json)).toList(); 
+              return data.map((json) => Movie.fromJson(json)).toList();
             } else {
                 throw Exception('Failed to load discover movies');
             }
@@ -59,6 +63,7 @@ class ApiClient {
             rethrow;
         }
     }
+
 
     Future<List<Movie>> getSearchMovies(String query) async{
         try{
@@ -75,24 +80,27 @@ class ApiClient {
         }
     }
 
+
     Future<MovieDetails> getMovieDetails(String movieId) async {
         try{
             final response = await http.get(Uri.parse('$_baseUrl/$movieId'));
             if (response.statusCode == 200){
                 return MovieDetails.fromJson(jsonDecode(response.body));
             } else {
-                
+               
                 throw Exception('Failed to load movie details: ${response.statusCode}');
             }
         } catch (e){
             logger.e('ApiClient error (Movie Details), $e');
             rethrow;
-        }   
+        }  
     }
+
 
     Future<List<Movie>> getPopularPHMovies() async {
       try {
         final response = await http.get(Uri.parse('$_baseUrl/popular-ph'));
+
 
         if (response.statusCode == 200) {
           List<dynamic> data = jsonDecode(response.body);
@@ -101,15 +109,18 @@ class ApiClient {
           throw Exception('Failed to load popular movies in Philippines');
         }
 
+
       } catch (e) {
         logger.e('ApiClient error (Popular PH), $e');
         rethrow;
       }
     }
 
+
     Future<List<Movie>> getUpcomingMovies() async {
       try {
         final response = await http.get(Uri.parse('$_baseUrl/upcoming'));
+
 
         if (response.statusCode == 200) {
           List<dynamic> data = jsonDecode(response.body);
@@ -118,16 +129,20 @@ class ApiClient {
           throw Exception('Failed to load upcoming movies');
         }
 
+
       } catch (e) {
         logger.e('ApiClient error (Upcoming), $e');
         rethrow;
       }
 
+
     }
+
 
     Future<List<Sources>> getSources(String tmdbId) async {
       try{
         final response = await http.get(Uri.parse('$_baseUrlWatchmode/$tmdbId'));
+
 
         if (response.statusCode == 200){
           List<dynamic> data = jsonDecode(response.body);
@@ -138,12 +153,70 @@ class ApiClient {
           throw Exception('Failed to load sources: ${response.statusCode}');
         }
 
+
       } catch (e){
         logger.e('ApiClient error (Sources), $e');
         rethrow;
       }
     }
+   
+    Future<List<Movie>> getFilteredMovies({
+    String? genreId,
+    double? minRating,
+    double? maxRuntime,
+  }) async {
+    try {
+      // Build the query parameters dynamically
+      final Map<String, String> queryParameters = {};
+     
+      if (genreId != null) queryParameters['genreId'] = genreId;
+      if (minRating != null) queryParameters['minRating'] = minRating.toString();
+      if (maxRuntime != null) queryParameters['maxRuntime'] = maxRuntime.toString();
+
+
+      // Creates the URL: http://localhost:3000/api/movies/filter?genreId=...&minRating=...
+      final uri = Uri.parse('$_baseUrl/filter').replace(queryParameters: queryParameters);
+
+
+      final response = await http.get(uri);
+
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Movie.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load filtered movies: ${response.statusCode}');
+      }
+    } catch (e) {
+      logger.e('ApiClient error (Filtered Movies), $e');
+      rethrow;
+    }
+  }
+ 
+ Future<List<Movie>> getMoviesByGenre(String genreId) async {
+  try {
+    final response = await http.get(Uri.parse('$_baseUrl/genre/$genreId'));
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Movie.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load movies for genre ID: $genreId');
+    }
+  } catch (e) {
+    logger.e('ApiClient error (Genre), $e');
+    rethrow;
+  }
+}
 
 
 }
 
+
+
+
+
+
+ 
+
+
+ 
