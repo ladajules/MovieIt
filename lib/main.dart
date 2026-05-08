@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:movieit/models/scheduled_event.dart';
 import 'package:movieit/models/user_preferences.dart';
 import 'package:movieit/models/user_stats.dart';
+import 'package:movieit/models/watchlist_item.dart';
 
 import 'package:movieit/providers/movie_provider.dart';
 import 'package:movieit/screens/home_screen.dart';
@@ -25,7 +26,7 @@ void main() async {
   await Hive.openBox<ScheduledEvent>('scheduled_events');
   await Hive.openBox<UserPreferences>('user_preferences');
   await Hive.openBox<UserStats>('user_stats');
-  await Hive.openBox<String>('watchlistMovieIds');
+  await Hive.openBox<WatchlistItem>('watchlistMovieIds');
 
   runApp(
     ChangeNotifierProvider(

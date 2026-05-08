@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/scheduled_event.dart';
 import '../models/user_stats.dart';
 import '../models/user_preferences.dart';
+import '../models/watchlist_item.dart';
 
 class LocalDbService {
   static const String _eventsBoxName = 'scheduledEvents';
@@ -98,30 +99,8 @@ class LocalDbService {
   }
 
   // WAATCHLIST
-  Box<String> get _watchlistBox => Hive.box<String>(_watchlistBoxName);
+  Box<WatchlistItem> get _watchlistBox => Hive.box<WatchlistItem>(_watchlistBoxName);
 
-  List<String> getWatchlistIds() {
-    return _watchlistBox.values.toList();
-  }
-
-  Future<void> addToWatchlist(String movieId) async {
-    if (!_watchlistBox.values.contains(movieId)) {
-      await _watchlistBox.add(movieId);
-    }
-  }
-
-  Future<void> removeFromWatchlist(String movieId) async {
-    final key = _watchlistBox.keys.firstWhere(
-      (k) => _watchlistBox.get(k) == movieId, 
-      orElse: () => null
-    );
-    if (key != null) {
-      await _watchlistBox.delete(key);
-    }
-  }
-
-  bool isInWatchlist(String movieId) {
-    return _watchlistBox.values.contains(movieId);
-  }
+  // TODO:
 
 }
