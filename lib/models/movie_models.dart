@@ -7,6 +7,8 @@ class Movie{
   final String? backdropUrl;
   final String? year;
   final String? rating;
+  final List<int>? genreIds;
+  final int? runtime;
 
   Movie({
     required this.id,
@@ -16,6 +18,8 @@ class Movie{
     this.backdropUrl,
     this.year,
     this.rating,
+    this.genreIds,
+    this.runtime,
   });
 
   factory Movie.fromJson(Map<String, dynamic> json){
@@ -27,6 +31,8 @@ class Movie{
       backdropUrl: json['backdropUrl'],
       year: json['year']?.toString(),
       rating: json['rating']?.toString(),   
+      genreIds: (json['genres'] as List<dynamic>?)?.map((e) => e as int).toList(),
+      runtime: json['runtime'] as int?,
     );
   }
 }

@@ -3,12 +3,13 @@ import '../models/scheduled_event.dart';
 import '../models/user_stats.dart';
 import '../models/user_preferences.dart';
 import '../models/watchlist_item.dart';
+import 'package:flutter/foundation.dart';
 
 class LocalDbService {
   static const String _eventsBoxName = 'scheduledEvents';
   static const String _statsBoxName = 'userStats';
   static const String _prefsBoxName = 'userPreferences';
-  static const String _watchlistBoxName = 'watchlistMovieIds';
+  static const String _watchlistBoxName = 'watchlist';
 
   // PREFERNCES
   Box<UserPreferences> get _prefsBox => Hive.box<UserPreferences>(_prefsBoxName);
@@ -101,6 +102,20 @@ class LocalDbService {
   // WAATCHLIST
   Box<WatchlistItem> get _watchlistBox => Hive.box<WatchlistItem>(_watchlistBoxName);
 
-  // TODO:
+  bool isInWatchlist(int movieId) {
+    return _watchlistBox.containsKey(movieId);
+  }
+
+  Future<void> toggleWatchlist(WatchlistItem item) async {
+    if (_watchlistBox.containsKey(item.tmdbId)) {
+      await _watchlistBox.delete(item.tmdbId);
+    } else {
+      await _watchlistBox.put(item.tmdbId, item);
+    }
+  }
+
+  ValueListenable<Box<WatchlistItem>> listenToWatchlist() {
+    return _watchlistBox.listenable();
+  }
 
 }
