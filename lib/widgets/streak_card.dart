@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:movieit/models/user_stats.dart';
 import 'package:movieit/theme/app_colors.dart';
 import 'package:movieit/theme/app_styles.dart';
 import '../models/scheduled_event.dart';
-import '../services/local_db_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../utils/stats_engine.dart';
 
@@ -11,13 +11,14 @@ class StreakCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Box<ScheduledEvent>>(
-      valueListenable: LocalDbService().listenToEvents(),
-      builder: (context, box, _) {
-        final engine = StatsEngine(box);
+    return ValueListenableBuilder<Box<UserStats>>(
+      valueListenable: Hive.box<UserStats>('user_stats').listenable(),
+      builder: (context, statsBox, _) {
+        final stats = statsBox.get('user_stats') ?? UserStats();
+        final eventsBox = Hive.box<ScheduledEvent>('scheduled_event');
+
+        final engine = StatsEngine(eventsBox, stats);
         final streak = engine.getWeeklyStreak();
-        
-        final personalBest = streak > 5 ? streak : 5; // TODO: actual PB soon
 
         Color themeColor;
         Color bgColor;
@@ -72,7 +73,7 @@ class StreakCard extends StatelessWidget {
               Expanded(
                 child: Text(titleText, style: AppStyles.heading(size: 14)),
               ),
-              Text('Personal best: $personalBest', style: AppStyles.body(size: 11)),
+              Text('Personal best: ${stats.streakPersonalBest}', style: AppStyles.body(size: 11)),
             ],
           ),
         );

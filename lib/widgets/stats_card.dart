@@ -5,18 +5,21 @@ import 'surface_card.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_styles.dart';
 import '../models/scheduled_event.dart';
-import '../services/local_db_service.dart';
 import '../utils/stats_engine.dart';
+import '../models/user_stats.dart';
 
 class StatsCard extends StatelessWidget {
   const StatsCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Box<ScheduledEvent>>(
-      valueListenable: LocalDbService().listenToEvents(),
-      builder: (context, box, _) {
-        final engine = StatsEngine(box);
+    return ValueListenableBuilder<Box<UserStats>>(
+      valueListenable: Hive.box<UserStats>('user_stats').listenable(),
+      builder: (context, statsBox, _) {
+        final stats = statsBox.get('user_stats') ?? UserStats();
+
+        final eventsBox = Hive.box<ScheduledEvent>('scheduled_event');
+        final engine = StatsEngine(eventsBox, stats);
         
         final nightsPlanned = engine.getTotalNightsPlanned();
         final totalMins = engine.getTotalRuntimeMinutes();

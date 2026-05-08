@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movieit/models/user_stats.dart';
 import 'package:movieit/theme/app_colors.dart';
 import 'package:movieit/theme/app_styles.dart';
 import 'package:intl/intl.dart';
@@ -13,13 +14,16 @@ class MonthlyGoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Box<ScheduledEvent>>(
-      valueListenable: LocalDbService().listenToEvents(),
-      builder: (context, box, _) {
-        final engine = StatsEngine(box);
+    return ValueListenableBuilder<Box<UserStats>>(
+      valueListenable: Hive.box<UserStats>('user_stats').listenable(),
+      builder: (context, statsBox, _) {
+        final stats = statsBox.get('user_stats') ?? UserStats();
+        final eventsBox = Hive.box<ScheduledEvent>('scheduled_event');
+
+        final engine = StatsEngine(eventsBox, stats);
         final current = engine.getCurrentMonthProgress();
         
-        final target = 4; // soon LocalDbService().getPreferences().monthlyGoalTarget ?? 4
+        final target = LocalDbService().getPreferences().monthlyGoalTarget;
         
         final progress = (current / target).clamp(0.0, 1.0);
         final isComplete = current >= target;

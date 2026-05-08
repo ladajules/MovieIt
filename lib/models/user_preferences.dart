@@ -9,9 +9,13 @@ class UserPreferences extends HiveObject {
   @HiveField(1)
   String calendarView; // monthly or weekly
 
+  @HiveField(2)
+  int monthlyGoalTarget;
+
   UserPreferences({
     this.notificationsEnabled = true,
     this.calendarView = 'monthly',
+    this.monthlyGoalTarget = 4,
   });
 }
 

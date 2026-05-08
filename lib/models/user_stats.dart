@@ -18,13 +18,22 @@ class UserStats extends HiveObject {
   @HiveField(4)
   Map<String, int> genreCounts; 
 
+  @HiveField(5) 
+  Map<String, int> platformCounts;
+
+  @HiveField(6)
+  int streakPersonalBest;
+
   UserStats({
     this.nightsPlanned = 0,
     this.totalRuntimeMinutes = 0,
     this.totalRatingSum = 0.0,
     this.totalMoviesRated = 0,
     Map<String, int>? genreCounts,
-  }) : genreCounts = genreCounts ?? {};
+    Map<String, int>? platformCounts,
+    this.streakPersonalBest = 0,
+  }) : genreCounts = genreCounts ?? {},
+       platformCounts = platformCounts ?? {};
 
   double get averageRating => totalMoviesRated == 0 ? 0.0 : totalRatingSum / totalMoviesRated;
 }

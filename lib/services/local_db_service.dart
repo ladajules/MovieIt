@@ -15,22 +15,22 @@ class LocalDbService {
   Box<UserPreferences> get _prefsBox => Hive.box<UserPreferences>(_prefsBoxName);
 
   UserPreferences getPreferences() {
-    return _prefsBox.get('main_prefs') ?? UserPreferences();
+    return _prefsBox.get('user_preferences') ?? UserPreferences();
   }
 
   Future<void> savePreferences(UserPreferences prefs) async {
-    await _prefsBox.put('main_prefs', prefs);
+    await _prefsBox.put('user_preferences', prefs);
   }
 
   // USER STATS
   Box<UserStats> get _statsBox => Hive.box<UserStats>(_statsBoxName);
 
   UserStats getStats() {
-    return _statsBox.get('main_stats') ?? UserStats();
+    return _statsBox.get('user_stats') ?? UserStats();
   }
 
   Future<void> _saveStats(UserStats stats) async {
-    await _statsBox.put('main_stats', stats);
+    await _statsBox.put('user_stats', stats);
   }
 
   // SCHEDULED EVENTS
@@ -52,6 +52,8 @@ class LocalDbService {
     for (String genre in event.genres) {
       stats.genreCounts[genre] = (stats.genreCounts[genre] ?? 0) + 1;
     }
+
+    stats.platformCounts[event.platform] = (stats.platformCounts[event.platform] ?? 0) + 1;
     
     await _saveStats(stats);
   }
@@ -85,6 +87,10 @@ class LocalDbService {
         if (stats.genreCounts.containsKey(genre)) {
           stats.genreCounts[genre] = (stats.genreCounts[genre]! - 1).clamp(0, double.infinity).toInt();
         }
+      }
+
+      if (stats.platformCounts.containsKey(event.platform)) {
+        stats.platformCounts[event.platform] = (stats.platformCounts[event.platform]! - 1).clamp(0, 999999);
       }
 
       if (event.isReviewed && event.rating != null) {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:movieit/models/user_stats.dart';
 
 import 'surface_card.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_styles.dart';
 import '../models/scheduled_event.dart';
-import '../services/local_db_service.dart';
 import '../utils/stats_engine.dart';
 
 class PlatformsCard extends StatelessWidget {
@@ -13,10 +13,13 @@ class PlatformsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Box<ScheduledEvent>>(
-      valueListenable: LocalDbService().listenToEvents(),
-      builder: (context, box, _) {
-        final engine = StatsEngine(box);
+    return ValueListenableBuilder<Box<UserStats>>(
+      valueListenable: Hive.box<UserStats>('user_stats').listenable(),
+      builder: (context, statsBox, _) {
+        final stats = statsBox.get('user_stats') ?? UserStats();
+        final eventsBox = Hive.box<ScheduledEvent>('scheduled_event');
+
+        final engine = StatsEngine(eventsBox, stats);
         final topPlatforms = engine.getTopPlatformsWithPercentages();
 
         return SurfaceCard(

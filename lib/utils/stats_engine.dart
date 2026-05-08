@@ -1,10 +1,16 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:movieit/models/user_stats.dart';
 import '../models/scheduled_event.dart';
 
 class StatsEngine {
   final Box<ScheduledEvent> _eventsBox;
+  final UserStats _stats;
   
-  StatsEngine(this._eventsBox);
+  StatsEngine(this._eventsBox, this._stats);
+
+  int getTotalNightsPlanned() => _stats.nightsPlanned;
+  int getTotalRuntimeMinutes() => _stats.totalRuntimeMinutes;
+  double getAverageRating() => _stats.averageRating;
 
   int getCurrentMonthProgress() {
     final now = DateTime.now();
@@ -47,48 +53,30 @@ class StatsEngine {
     return DateTime(monday.year, monday.month, monday.day);
   }
 
-  int getTotalNightsPlanned() => _eventsBox.length;
-
-  int getTotalRuntimeMinutes() {
-    return _eventsBox.values.fold(0, (sum, event) => sum + event.runtime);
-  }
-
-  double getAverageRating() {
-    final ratedEvents = _eventsBox.values.where((e) => e.isReviewed && e.rating != null);
-    if (ratedEvents.isEmpty) return 0.0;
-    final sum = ratedEvents.fold(0.0, (s, e) => s + e.rating!);
-    return sum / ratedEvents.length;
-  }
-
   int getPendingReviewCount() {
     return _eventsBox.values.where((e) => e.isWatched && !e.isReviewed).length;
   }
 
   List<MapEntry<String, double>> getTopGenresWithPercentages([int limit = 3]) {
-    final counts = <String, int>{};
-    int total = 0;
-    for (final e in _eventsBox.values) {
-      for (final g in e.genres) {
-        counts[g] = (counts[g] ?? 0) + 1;
-        total++;
-      }
-    }
+    final total = _stats.genreCounts.values.fold(0, (sum, count) => sum + count);
     if (total == 0) return [];
     
-    final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final sorted = _stats.genreCounts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     return sorted.take(limit).map((e) => MapEntry(e.key, (e.value / total) * 100)).toList();
   }
 
   List<MapEntry<String, double>> getTopPlatformsWithPercentages([int limit = 3]) {
-    final counts = <String, int>{};
-    int total = 0;
-    for (final e in _eventsBox.values) {
-      counts[e.platform] = (counts[e.platform] ?? 0) + 1;
-      total++;
-    }
-    if (total == 0) return [];
+    final counts = _stats.platformCounts; 
+    if (counts.isEmpty) return [];
+
+    final total = counts.values.fold(0, (sum, count) => sum + count);
     
-    final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-    return sorted.take(limit).map((e) => MapEntry(e.key, (e.value / total) * 100)).toList();
+    final sorted = counts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+      
+    return sorted
+        .take(limit)
+        .map((e) => MapEntry(e.key, (e.value / total) * 100))
+        .toList();
   }
 }
