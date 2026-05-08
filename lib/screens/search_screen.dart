@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:lottie/lottie.dart';
 import 'package:movieit/providers/movie_provider.dart';
 import 'package:movieit/widgets/search_result_list.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/movieit_search_bar.dart';
-import '../theme/app_colors.dart';
 
 import 'package:logger/logger.dart';
 

@@ -178,7 +178,7 @@ class LocalDbService {
     final bytes = utf8.encode(jsonString);
     final blob = html.Blob([bytes], 'application/json');
     final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.AnchorElement(href: url)
+    html.AnchorElement(href: url)
       ..setAttribute('download', 'movieit_backup.json')
       ..click(); 
       

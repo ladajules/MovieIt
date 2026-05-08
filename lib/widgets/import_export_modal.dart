@@ -29,7 +29,7 @@ class _ImportExportModalState extends State<ImportExportModal> {
   Future<void> _handleImport() async {
     setState(() => _isLoading = true);
     try {
-      final success = await LocalDbService().importDatabase();
+      await LocalDbService().importDatabase();
       if (mounted) Navigator.pop(context);
       // TODO: notif of import successful
     } catch (e) {

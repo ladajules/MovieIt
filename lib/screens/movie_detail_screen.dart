@@ -45,7 +45,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       tmdbId: movie.id,
       title: movie.title,
       posterPath: movie.posterUrl ?? '', 
-      runtimeMinutes: movie.runtime ?? 0,
+      runtimeMinutes: movie.runtime,
       genreIds: movie.genres.map((g) => g.hashCode).toList(), 
       cachedAt: DateTime.now().toUtc(),
     );
