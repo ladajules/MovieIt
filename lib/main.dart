@@ -24,7 +24,7 @@ void main() async {
   Hive.registerAdapter(UserStatsAdapter());
   Hive.registerAdapter(WatchlistItemAdapter());
 
-  await Hive.openBox<ScheduledEvent>('scheduled_events');
+  await Hive.openBox<ScheduledEvent>('scheduled_event');
   await Hive.openBox<UserPreferences>('user_preferences');
   await Hive.openBox<UserStats>('user_stats');
   await Hive.openBox<WatchlistItem>('watchlist');

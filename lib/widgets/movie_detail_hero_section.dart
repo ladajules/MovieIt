@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/movie_details_model.dart';
+import '../../widgets/schedule_movie_modal.dart';
 
 class MovieHeroSection extends StatelessWidget {
   final MovieDetails movie;
@@ -170,7 +171,11 @@ class _InfoColumn extends StatelessWidget {
           children: [
             _ScheduleButton(
               onTap: () {
-                // TODO: Trigger schedule modal
+                showDialog(
+                  context: context,
+                  barrierColor: Colors.black.withOpacity(0.7),
+                  builder: (context) => ScheduleMovieModal(movie: movie),
+                );
               },
             ),
             const SizedBox(width: 12),

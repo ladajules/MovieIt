@@ -6,9 +6,9 @@ import '../models/watchlist_item.dart';
 import 'package:flutter/foundation.dart';
 
 class LocalDbService {
-  static const String _eventsBoxName = 'scheduledEvents';
-  static const String _statsBoxName = 'userStats';
-  static const String _prefsBoxName = 'userPreferences';
+  static const String _eventsBoxName = 'scheduled_event';
+  static const String _statsBoxName = 'user_stats';
+  static const String _prefsBoxName = 'user_preferences';
   static const String _watchlistBoxName = 'watchlist';
 
   // PREFERNCES
@@ -97,6 +97,10 @@ class LocalDbService {
       // del event
       await _eventsBox.delete(eventId);
     }
+  }
+
+  ValueListenable<Box<ScheduledEvent>> listenToEvents() {
+    return _eventsBox.listenable();
   }
 
   // WAATCHLIST
