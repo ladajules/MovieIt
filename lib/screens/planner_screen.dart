@@ -1,256 +1,193 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_styles.dart';
 
-import '../models/movie_models.dart';
-import '../widgets/two_tone_card.dart';
-import '../widgets/metric_box.dart';
-import '../widgets/genre_bar.dart';
-import '../widgets/movie_card_horizontal.dart';
-import '../widgets/calendar_section.dart';
-import '../providers/app_colors.dart';
+import '../widgets/calendar_card.dart';
+import '../widgets/monthly_goal_card.dart';
+import '../widgets/pending_review_card.dart';
+import '../widgets/platforms_card.dart';
+import '../widgets/recent_activity_card.dart';
+import '../widgets/roulette_card.dart';
+import '../widgets/stats_card.dart';
+import '../widgets/streak_card.dart';
+import '../widgets/watchlist_section.dart';
 
 class PlannerScreen extends StatelessWidget {
-  final List<Movie>? watchlistMovies;
-
-  const PlannerScreen({
-    super.key,
-    this.watchlistMovies,
-  });
+  const PlannerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final safeMoviesList = watchlistMovies ?? [];
-
-    // 1. Root Container provides the gradient background
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF2E0A52), Colors.black, Color(0xFF032D6C)],
-        ),
-      ),
+      color: AppColors.plannerBg,
       child: Scaffold(
-        backgroundColor: Colors.transparent, // 2. Transparent to see the gradient
+        backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1000),
-              child: CustomScrollView(
-                slivers: [
-                  const SliverToBoxAdapter(child: SizedBox(height: 32)),
-
-                  // stats dashboard
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: _StatsSection(),
-                    ),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-                  // calendar
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: CalendarSection(),
-                    ),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-                  // pending review or notes
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: _PendingReviewCard(),
-                    ),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
-
-                  // watchlist 
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      child: Text(
-                        "Your Watchlist",
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  _WatchlistHorizontalList(movies: safeMoviesList),
-                  
-                  const SliverToBoxAdapter(child: SizedBox(height: 60)),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _WatchlistHorizontalList extends StatelessWidget {
-  final List<Movie> movies;
-
-  const _WatchlistHorizontalList({required this.movies});
-
-  @override
-  Widget build(BuildContext context) {
-    if (movies.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          alignment: Alignment.center,
-          child: const Text(
-            "Your watchlist is empty.",
-            style: TextStyle(color: Colors.white54, fontSize: 16),
-          ),
-        ),
-      );
-    }
-
-    return SliverToBoxAdapter(
-      child: SizedBox(
-        height: 280, 
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          itemCount: movies.length,
-          itemBuilder: (context, index) {
-            return MovieCard(item: movies[index]); 
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _StatsSection extends StatelessWidget {
-  const _StatsSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return const TwoToneCard(
-      title: "Dashboard",
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+          child: Column(
             children: [
-              Expanded(child: MetricBox(value: "8", label: "Nights planned")),
-              SizedBox(width: 12),
-              Expanded(child: MetricBox(value: "19h", label: "Total runtime")),
-              SizedBox(width: 12),
-              Expanded(child: MetricBox(value: "4.2", label: "Avg rating")),
+              const _TopBar(),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth >= 900) {
+                      return const _DesktopLayout();
+                    }
+                    return const _MobileLayout();
+                  },
+                ),
+              ),
             ],
           ),
-          SizedBox(height: 24),
-          Text("TOP GENRES", style: TextStyle(color: AppColors.white, fontSize: 12, letterSpacing: 1.2)),
-          SizedBox(height: 12),
-          GenreBar(genre: "Sci-Fi", percentage: 85),
-          SizedBox(height: 12),
-          GenreBar(genre: "Drama", percentage: 60),
-          SizedBox(height: 12),
-          GenreBar(genre: "Action", percentage: 45),
+        ),
+        floatingActionButton: const ScheduleFab(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      ),
+    );
+  }
+}
+
+class _TopBar extends StatelessWidget {
+  const _TopBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(40, 20, 40, 12),
+      child: Row(
+        children: [
+          Text('My Planner', style: AppStyles.value(size: 26)),
+          const Spacer(),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.plannerSurface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.cardBorder),
+            ),
+            child: const Icon(Icons.import_export_rounded, color: AppColors.textSecondary, size: 18),
+          ),
         ],
       ),
     );
   }
 }
 
-class _PendingReviewCard extends StatelessWidget {
-  const _PendingReviewCard();
+class _DesktopLayout extends StatelessWidget {
+  const _DesktopLayout();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cardBody,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.softPeriwinkle.withOpacity(0.3), width: 1),
-      ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(40, 0, 40, 100),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 45,
-            height: 45,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.white12),
-            ),
-            child: const Icon(Icons.movie, color: Colors.white30, size: 20),
-          ),
-          const SizedBox(width: 16),
           const Expanded(
+            flex: 2,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("How was Interstellar?", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                SizedBox(height: 4),
-                Text("Movie night on May 3", style: TextStyle(color: AppColors.white, fontSize: 12)),
+                StreakCard(),
+                SizedBox(height: 12),
+                MonthlyGoalCard(),
+                SizedBox(height: 12),
+                CalendarCard(),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Row(
-                children: List.generate(5, (index) => const Icon(Icons.star_border_rounded, color: Colors.white30, size: 18)),
-              ),
-              const SizedBox(height: 4),
-              const Text("Add Note", style: TextStyle(color: AppColors.softPeriwinkle, fontWeight: FontWeight.bold, fontSize: 12)),
-            ],
-          )
+          const SizedBox(width: 16),
+          const Expanded(
+            flex: 5,
+            child: Column(
+              children: [
+                StatsCard(),
+                SizedBox(height: 16),
+                PendingReviewCard(),
+                SizedBox(height: 16),
+                WatchlistSection(),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          const Expanded(
+            flex: 2,
+            child: Column(
+              children: [
+                RouletteCard(),
+                SizedBox(height: 12),
+                PlatformsCard(),
+                SizedBox(height: 12),
+                RecentActivityCard(),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _WatchlistGrid extends StatelessWidget {
-  final List<Movie> movies;
-
-  const _WatchlistGrid({required this.movies});
+class _MobileLayout extends StatelessWidget {
+  const _MobileLayout();
 
   @override
   Widget build(BuildContext context) {
-    if (movies.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 40),
-          alignment: Alignment.center,
-          child: const Text(
-            "Your watchlist is empty.",
-            style: TextStyle(color: Colors.white54, fontSize: 16),
-          ),
-        ),
-      );
-    }
-
-    return SliverGrid(
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 250, 
-        childAspectRatio: 2 / 3, 
-        crossAxisSpacing: 20,
-        mainAxisSpacing: 20,
-      ),
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          return MovieCard(item: movies[index]); 
-        },
-        childCount: movies.length, 
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(40, 0, 40, 100),
+      child: Column(
+        children: const [
+          Row(children: [
+            Expanded(child: StreakCard()),
+            SizedBox(width: 12),
+            Expanded(child: MonthlyGoalCard()),
+          ]),
+          SizedBox(height: 12),
+          StatsCard(),
+          SizedBox(height: 12),
+          CalendarCard(),
+          SizedBox(height: 12),
+          PendingReviewCard(),
+          SizedBox(height: 12),
+          RouletteCard(),
+          SizedBox(height: 12),
+          WatchlistSection(),
+          SizedBox(height: 12),
+          PlatformsCard(),
+          SizedBox(height: 12),
+          RecentActivityCard(),
+        ],
       ),
     );
   }
+}
 
+class ScheduleFab extends StatelessWidget {
+  const ScheduleFab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {},
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.plannerCard,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: AppColors.softPeriwinkle.withOpacity(0.5)),
+          boxShadow: [
+            BoxShadow(color: AppColors.softPeriwinkle.withOpacity(0.15), blurRadius: 20, spreadRadius: 2),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.calendar_month_outlined, color: AppColors.softPeriwinkle, size: 18),
+            const SizedBox(width: 8),
+            Text('Schedule a movie night', style: AppStyles.body(size: 13, color: AppColors.softPeriwinkle)),
+          ],
+        ),
+      ),
+    );
+  }
 }
