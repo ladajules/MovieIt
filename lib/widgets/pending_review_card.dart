@@ -6,6 +6,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_styles.dart';
 import '../models/scheduled_event.dart';
 import '../services/local_db_service.dart';
+import '../utils/tmdb_image_helper.dart';
 
 class PendingReviewCard extends StatelessWidget {
   const PendingReviewCard({super.key});
@@ -40,16 +41,10 @@ class PendingReviewCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.plannerSurface,
                   borderRadius: BorderRadius.circular(8),
-                  image: event.posterUrl != null 
-                      ? DecorationImage(image: NetworkImage(event.posterUrl!), fit: BoxFit.cover)
-                      : null,
-                  gradient: event.posterUrl == null 
-                      ? const LinearGradient(
-                          begin: Alignment.topLeft, 
-                          end: Alignment.bottomRight, 
-                          colors: [Color(0xFF4A1A7A), Color(0xFF1A1A4A)]
-                        )
-                      : null,
+                  image: DecorationImage(
+                    image: NetworkImage(TmdbImageHelper.buildUrl(event.posterUrl, size: 'w185')),
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 child: event.posterUrl == null 
                     ? const Icon(Icons.movie_creation_outlined, color: Colors.white30, size: 22)
