@@ -128,6 +128,9 @@ class LocalDbService {
     return _watchlistBox.listenable();
   }
 
+
+  
+
   // TO REMOVE SOOOOONEST
   Future<void> injectTestData() async {
     final db = LocalDbService();

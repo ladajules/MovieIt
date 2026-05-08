@@ -66,17 +66,15 @@ class StatsEngine {
   }
 
   List<MapEntry<String, double>> getTopPlatformsWithPercentages([int limit = 3]) {
-    final counts = _stats.platformCounts; 
-    if (counts.isEmpty) return [];
-
-    final total = counts.values.fold(0, (sum, count) => sum + count);
+    final counts = <String, int>{};
+    int total = 0;
+    for (final e in _eventsBox.values) {
+      counts[e.platform] = (counts[e.platform] ?? 0) + 1;
+      total++;
+    }
+    if (total == 0) return [];
     
-    final sorted = counts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-      
-    return sorted
-        .take(limit)
-        .map((e) => MapEntry(e.key, (e.value / total) * 100))
-        .toList();
+    final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    return sorted.take(limit).map((e) => MapEntry(e.key, (e.value / total) * 100)).toList();
   }
 }
