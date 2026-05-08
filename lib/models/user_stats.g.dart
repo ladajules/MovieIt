@@ -22,13 +22,15 @@ class UserStatsAdapter extends TypeAdapter<UserStats> {
       totalRatingSum: fields[2] as double,
       totalMoviesRated: fields[3] as int,
       genreCounts: (fields[4] as Map?)?.cast<String, int>(),
+      platformCounts: (fields[5] as Map?)?.cast<String, int>(),
+      streakPersonalBest: fields[6] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserStats obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.nightsPlanned)
       ..writeByte(1)
@@ -38,7 +40,11 @@ class UserStatsAdapter extends TypeAdapter<UserStats> {
       ..writeByte(3)
       ..write(obj.totalMoviesRated)
       ..writeByte(4)
-      ..write(obj.genreCounts);
+      ..write(obj.genreCounts)
+      ..writeByte(5)
+      ..write(obj.platformCounts)
+      ..writeByte(6)
+      ..write(obj.streakPersonalBest);
   }
 
   @override

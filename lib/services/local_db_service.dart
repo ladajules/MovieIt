@@ -5,6 +5,10 @@ import '../models/user_preferences.dart';
 import '../models/watchlist_item.dart';
 import 'package:flutter/foundation.dart';
 
+import 'dart:convert';
+import 'dart:html' as html;
+import 'package:file_picker/file_picker.dart';
+
 class LocalDbService {
   static const String _eventsBoxName = 'scheduled_event';
   static const String _statsBoxName = 'user_stats';
@@ -129,7 +133,133 @@ class LocalDbService {
   }
 
 
-  
+  // IMPORT EXPORT
+  Future<void> exportDatabase() async {
+    final stats = getStats();
+    
+    final backup = {
+      'scheduled_events': _eventsBox.values.map((e) => {
+        'id': e.id,
+        'movieId': e.movieId,
+        'movieTitle': e.movieTitle,
+        'posterUrl': e.posterUrl,
+        'platform': e.platform,
+        'scheduledDate': e.scheduledDate.toIso8601String(),
+        'runtime': e.runtime,
+        'genres': e.genres,
+        'isReviewed': e.isReviewed,
+        'isWatched': e.isWatched,
+        'rating': e.rating, 
+        'note': e.note, 
+      }).toList(),
+      'user_stats': {
+        'nightsPlanned': stats.nightsPlanned,
+        'totalRuntimeMinutes': stats.totalRuntimeMinutes,
+        'totalRatingSum': stats.totalRatingSum,
+        'totalMoviesRated': stats.totalMoviesRated,
+        'genreCounts': stats.genreCounts,
+        'platformCounts': stats.platformCounts, 
+      },
+      'watchlist': _watchlistBox.values.map((w) => {
+        'tmdbId': w.tmdbId,
+        'title': w.title,
+        'posterPath': w.posterPath,
+        'runtimeMinutes': w.runtimeMinutes,
+        'genreIds': w.genreIds,
+        'cachedAt': w.cachedAt.toIso8601String(),
+      }).toList(),
+      'preferences': {
+         'monthlyGoalTarget': getPreferences().monthlyGoalTarget,
+      }
+    };
+
+    final jsonString = jsonEncode(backup);
+
+    final bytes = utf8.encode(jsonString);
+    final blob = html.Blob([bytes], 'application/json');
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute('download', 'movieit_backup.json')
+      ..click(); 
+      
+    html.Url.revokeObjectUrl(url);
+  }
+
+  Future<bool> importDatabase() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+      withData: true,
+    );
+
+    if (result != null && result.files.single.bytes != null) {
+      final jsonString = utf8.decode(result.files.single.bytes!);
+      final Map<String, dynamic> backup = jsonDecode(jsonString);
+
+      await _eventsBox.clear();
+      if (backup['scheduled_events'] != null) {
+        for (var e in backup['scheduled_events']) {
+          final event = ScheduledEvent(
+            id: e['id'],
+            movieId: e['movieId'],
+            movieTitle: e['movieTitle'],
+            posterUrl: e['posterUrl'],
+            platform: e['platform'],
+            scheduledDate: DateTime.parse(e['scheduledDate']),
+            runtime: e['runtime'],
+            genres: List<String>.from(e['genres'] ?? []),
+            isReviewed: e['isReviewed'] ?? false,
+            isWatched: e['isWatched'] ?? false,
+          );
+          event.rating = e['rating']?.toDouble();
+          event.note = e['note'];
+          await _eventsBox.put(event.id, event);
+        }
+      }
+
+      if (backup['user_stats'] != null) {
+        final s = backup['user_stats'];
+        final stats = UserStats(
+          nightsPlanned: s['nightsPlanned'] ?? 0,
+          totalRuntimeMinutes: s['totalRuntimeMinutes'] ?? 0,
+          totalRatingSum: s['totalRatingSum']?.toDouble() ?? 0.0,
+          totalMoviesRated: s['totalMoviesRated'] ?? 0,
+          genreCounts: Map<String, int>.from(s['genreCounts'] ?? {}),
+        );
+        if (s['platformCounts'] != null) {
+          stats.platformCounts = Map<String, int>.from(s['platformCounts']);
+        }
+        await _saveStats(stats);
+      }
+
+      await _watchlistBox.clear();
+      if (backup['watchlist'] != null) {
+        for (var w in backup['watchlist']) {
+          final item = WatchlistItem(
+            tmdbId: w['tmdbId'],
+            title: w['title'],
+            posterPath: w['posterPath'],
+            runtimeMinutes: w['runtimeMinutes'],
+            genreIds: List<int>.from(w['genreIds'] ?? []),
+            cachedAt: DateTime.parse(w['cachedAt']),
+          );
+          await _watchlistBox.put(item.tmdbId, item);
+        }
+      }
+
+      if (backup['preferences'] != null) {
+         final p = backup['preferences'];
+         final prefs = UserPreferences(); 
+         prefs.monthlyGoalTarget = p['monthlyGoalTarget'] ?? 4;
+         await savePreferences(prefs);
+      }
+      return true;
+    }
+    return false; 
+  }
+
+
+
 
   // TO REMOVE SOOOOONEST
   Future<void> injectTestData() async {

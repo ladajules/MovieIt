@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movieit/widgets/import_export_modal.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_styles.dart';
 
@@ -76,15 +77,24 @@ class _TopBar extends StatelessWidget {
           // ======================================================================
 
           const Spacer(),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.plannerSurface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.cardBorder),
+          GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                barrierColor: Colors.black.withOpacity(0.7),
+                builder: (context) => const ImportExportModal(),
+              );
+            },
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.plannerSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              child: const Icon(Icons.import_export_rounded, color: AppColors.textSecondary, size: 18),
             ),
-            child: const Icon(Icons.import_export_rounded, color: AppColors.textSecondary, size: 18),
           ),
         ],
       ),
