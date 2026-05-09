@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:movieit/models/scheduled_event.dart';
 import 'package:movieit/models/watchlist_item.dart';
 import 'package:movieit/services/local_db_service.dart';
+import 'package:movieit/utils/tmdb_image_helper.dart';
 import '../services/api_client.dart';
 import '../models/movie_details_model.dart';
 import '../theme/app_colors.dart';
@@ -304,7 +305,7 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                                   id: DateTime.now().millisecondsSinceEpoch.toString(), 
                                   movieId: widget.movie.id.toString(), 
                                   movieTitle: widget.movie.title, 
-                                  posterUrl: '', 
+                                  posterUrl: TmdbImageHelper.buildUrl(widget.movie.posterUrl), 
                                   scheduledDate: scheduledDateTime, 
                                   platform: _selectedPlatform!, 
                                   runtime: widget.movie.runtime, 
