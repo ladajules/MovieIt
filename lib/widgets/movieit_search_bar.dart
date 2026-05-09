@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:movieit/providers/app_colors.dart';
+import 'package:movieit/theme/app_colors.dart';
 
 class MovieItSearchBar extends StatefulWidget {
     final ValueChanged<String>? onChanged;

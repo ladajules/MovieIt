@@ -7,6 +7,9 @@ import '../widgets/movie_detail_hero_section.dart';
 import '../widgets/cast_grid.dart';
 import '../services/api_client.dart';
 
+import '../services/local_db_service.dart';
+import '../models/watchlist_item.dart';
+
 class MovieDetailScreen extends StatefulWidget {
   final String movieId;
 
@@ -19,17 +22,39 @@ class MovieDetailScreen extends StatefulWidget {
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
   late Future<MovieDetails> _movieFuture;
   late Future<List<Sources>> _sourcesFuture;
+
+  final _dbService = LocalDbService();
   bool _isInWatchlist = false;
 
   @override
   void initState() {
     super.initState();
+    _fetchData();
+
+    final id = int.tryParse(widget.movieId) ?? 0;
+    _isInWatchlist = _dbService.isInWatchlist(id);
+  }
+
+  void _fetchData() {
     _movieFuture = ApiClient().getMovieDetails(widget.movieId.toString());
     _sourcesFuture = ApiClient().getSources(widget.movieId.toString());
   }
 
-  void _toggleWatchlist(MovieDetails movie) {
-    setState(() => _isInWatchlist = !_isInWatchlist);
+  Future<void> _toggleWatchlist(MovieDetails movie) async {
+    final item = WatchlistItem(
+      tmdbId: movie.id,
+      title: movie.title,
+      posterPath: movie.posterUrl ?? '', 
+      runtimeMinutes: movie.runtime,
+      genreIds: movie.genres.map((g) => g.hashCode).toList(), 
+      cachedAt: DateTime.now().toUtc(),
+    );
+
+    await _dbService.toggleWatchlist(item);
+
+    setState(() {
+      _isInWatchlist = _dbService.isInWatchlist(movie.id);
+    });
   }
 
   @override

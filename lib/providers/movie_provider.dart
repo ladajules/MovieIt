@@ -4,8 +4,10 @@ import 'package:movieit/models/movie_models.dart';
 import 'package:movieit/models/sources_model.dart';
 import 'package:movieit/services/api_client.dart';
 
+
 class MovieProvider extends ChangeNotifier{
   final ApiClient apiClient = ApiClient();
+
 
   List<Movie> _trendingMovies = [];
   List<Movie> _discoverMovies = [];
@@ -16,11 +18,13 @@ class MovieProvider extends ChangeNotifier{
   MovieDetails? _movieDetails;
   List<Sources>? _sourcesList = [];
 
+
   bool _isLoading = false;
   String _errorMessage = '';
 
+
   //getters
-  
+ 
   List<Movie> get trendingMoviesList => _trendingMovies;
   List<Movie> get discoverMoviesList => _discoverMovies;
   List<Movie> get searchMoviesList => _searchMovies;
@@ -29,10 +33,40 @@ class MovieProvider extends ChangeNotifier{
   List<Movie> get upcomingMoviesList => _upcomingMovies;
   MovieDetails? get movieDetailsMap => _movieDetails;
   List<Sources>? get sourcesList => _sourcesList;
-  
-  
+ 
+ 
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
+
+
+  Future<void> loadFilteredMovies({
+    int? genreId,
+    required double minRating,
+    required double maxRuntime,
+  }) async {
+    _setLoading(true);
+    _searchMovies.clear(); // Clear previous results to show fresh filtered ones
+
+
+    try {
+      // Note: We call a new method in apiClient (which we'll define below)
+      final results = await apiClient.getFilteredMovies(
+        genreId: genreId?.toString(),
+        minRating: minRating,
+        maxRuntime: maxRuntime,
+      );
+
+
+      _searchMovies = results;
+      _errorMessage = '';
+    } catch (e) {
+      _errorMessage = 'No movies match your current filters.';
+      debugPrint("Filter Error: $e");
+    } finally {
+      _setLoading(false);
+    }
+  }
+
 
   Future<void> loadTrendingAndDiscoverAndTop4() async {
     _setLoading(true);
@@ -44,6 +78,7 @@ class MovieProvider extends ChangeNotifier{
         apiClient.getPopularPHMovies(),
         apiClient.getUpcomingMovies(),
       ]);
+
 
       _trendingMovies = results[0];
       _discoverMovies = results[1];
@@ -58,10 +93,12 @@ class MovieProvider extends ChangeNotifier{
     }
   }
 
+
   Future<void> loadSearch(String query) async {
     if((query.isEmpty)){
       return;
     }
+
 
     _setLoading(true);
     _searchMovies.clear();
@@ -75,9 +112,24 @@ class MovieProvider extends ChangeNotifier{
     }
   }
 
+
+ Future<void> loadSearchByGenre(int genreId) async {
+  _setLoading(true);
+  _searchMovies.clear(); // We reuse searchMovies to display results in the grid
+  try {
+    _searchMovies = await apiClient.getMoviesByGenre(genreId.toString());
+    _errorMessage = '';
+  } catch (e) {
+    _errorMessage = 'Failed to load genre results';
+  } finally {
+    _setLoading(false);
+  }
+}
+
+
   Future<void> LoadMovieDetails(int movieId) async {
     _setLoading(true);  
-    _movieDetails = null; 
+    _movieDetails = null;
     try{
       _movieDetails = await apiClient.getMovieDetails(movieId.toString());
       _errorMessage = '';
@@ -87,6 +139,7 @@ class MovieProvider extends ChangeNotifier{
       _setLoading(false);
     }
   }
+
 
   Future<void> loadSources(String tmdbId) async {
     _setLoading(true);
@@ -101,14 +154,20 @@ class MovieProvider extends ChangeNotifier{
     }
   }
 
-  
+
+ 
+
+
 
 
   void _setLoading(bool value){
     _isLoading = value;
     notifyListeners();
-  
+ 
   }
+
+
+
 
 
 

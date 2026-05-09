@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:movieit/providers/movie_provider.dart';
 import 'package:provider/provider.dart';
 import '../widgets/hero_slider.dart';
