@@ -18,7 +18,7 @@ class _SearchScreenState extends State<SearchScreen> {
   int? _selectedGenreId;
   double _maxRuntime = 120.0;
   double _minRating = 5.0;
-  String _selectedLanguage = 'English';
+  String _selectedLanguage = 'en';
 
   
   bool _isFilterActive = false;
@@ -112,6 +112,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             _maxRuntime = 120.0;
                             _minRating = 5.0;
                             _selectedGenreId = null;
+                            _selectedLanguage = 'en';
                           });
                           
                           setState(() => _isFilterActive = false);
@@ -128,7 +129,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
-                    runSpacing: 0,
+                    runSpacing: 8,
                     children: [
                       28, 12, 16, 35, 80, 99, 18, 10751, 14, 36, 27, 10402,
                       9648, 10749, 878, 10770, 53, 10752, 37
@@ -164,12 +165,14 @@ class _SearchScreenState extends State<SearchScreen> {
                               () => _selectedGenreId = val ? id : null);
                           setState(() {});
                         },
-                        labelStyle: const TextStyle(
-                            color: Colors.black, fontSize: 12),
+                         labelStyle: TextStyle(
+                         color: isSelected ? Colors.white : Colors.black,  
+                        fontSize: 12,
+                         ),
                         backgroundColor: Colors.grey[400],
-                        selectedColor: Colors.grey[600],
+                        selectedColor: const Color(0xFFA970FF),  
                         showCheckmark: false,
-                      );
+                    );
                     }).toList(),
                   ),
                   const SizedBox(height: 20),
@@ -248,10 +251,69 @@ class _SearchScreenState extends State<SearchScreen> {
                       child: DropdownButton<String>(
                         value: _selectedLanguage,
                         isExpanded: true,
-                        items: ['English', 'Spanish', 'French']
-                            .map((l) =>
-                                DropdownMenuItem(value: l, child: Text(l)))
-                            .toList(),
+                        items: const [
+                            DropdownMenuItem(value: 'en', child: Text('English')),
+                            DropdownMenuItem(value: 'af', child: Text('Afrikaans')),
+                            DropdownMenuItem(value: 'ar', child: Text('Arabic')),
+                            DropdownMenuItem(value: 'bg', child: Text('Bulgarian')),
+                            DropdownMenuItem(value: 'bn', child: Text('Bengali')),
+                            DropdownMenuItem(value: 'ca', child: Text('Catalan')),
+                            DropdownMenuItem(value: 'cs', child: Text('Czech')),
+                            DropdownMenuItem(value: 'cy', child: Text('Welsh')),
+                            DropdownMenuItem(value: 'da', child: Text('Danish')),
+                            DropdownMenuItem(value: 'de', child: Text('German')),
+                            DropdownMenuItem(value: 'el', child: Text('Greek')),
+                            DropdownMenuItem(value: 'eo', child: Text('Esperanto')),
+                            DropdownMenuItem(value: 'es', child: Text('Spanish')),
+                            DropdownMenuItem(value: 'et', child: Text('Estonian')),
+                            DropdownMenuItem(value: 'eu', child: Text('Basque')),
+                            DropdownMenuItem(value: 'fa', child: Text('Persian')),
+                            DropdownMenuItem(value: 'fi', child: Text('Finnish')),
+                            DropdownMenuItem(value: 'fr', child: Text('French')),
+                            DropdownMenuItem(value: 'ga', child: Text('Irish')),
+                            DropdownMenuItem(value: 'gl', child: Text('Galician')),
+                            DropdownMenuItem(value: 'gu', child: Text('Gujarati')),
+                            DropdownMenuItem(value: 'he', child: Text('Hebrew')),
+                            DropdownMenuItem(value: 'hi', child: Text('Hindi')),
+                            DropdownMenuItem(value: 'hr', child: Text('Croatian')),
+                            DropdownMenuItem(value: 'hu', child: Text('Hungarian')),
+                            DropdownMenuItem(value: 'id', child: Text('Indonesian')),
+                            DropdownMenuItem(value: 'it', child: Text('Italian')),
+                            DropdownMenuItem(value: 'ja', child: Text('Japanese')),
+                            DropdownMenuItem(value: 'ka', child: Text('Georgian')),
+                            DropdownMenuItem(value: 'kn', child: Text('Kannada')),
+                            DropdownMenuItem(value: 'ko', child: Text('Korean')),
+                            DropdownMenuItem(value: 'lt', child: Text('Lithuanian')),
+                            DropdownMenuItem(value: 'lv', child: Text('Latvian')),
+                            DropdownMenuItem(value: 'mk', child: Text('Macedonian')),
+                            DropdownMenuItem(value: 'ml', child: Text('Malayalam')),
+                            DropdownMenuItem(value: 'mr', child: Text('Marathi')),
+                            DropdownMenuItem(value: 'ms', child: Text('Malay')),
+                            DropdownMenuItem(value: 'mt', child: Text('Maltese')),
+                            DropdownMenuItem(value: 'nb', child: Text('Norwegian')),
+                            DropdownMenuItem(value: 'nl', child: Text('Dutch')),
+                            DropdownMenuItem(value: 'pa', child: Text('Punjabi')),
+                            DropdownMenuItem(value: 'pl', child: Text('Polish')),
+                            DropdownMenuItem(value: 'pt', child: Text('Portuguese')),
+                            DropdownMenuItem(value: 'ro', child: Text('Romanian')),
+                            DropdownMenuItem(value: 'ru', child: Text('Russian')),
+                            DropdownMenuItem(value: 'sk', child: Text('Slovak')),
+                            DropdownMenuItem(value: 'sl', child: Text('Slovenian')),
+                            DropdownMenuItem(value: 'sq', child: Text('Albanian')),
+                            DropdownMenuItem(value: 'sr', child: Text('Serbian')),
+                            DropdownMenuItem(value: 'sv', child: Text('Swedish')),
+                            DropdownMenuItem(value: 'sw', child: Text('Swahili')),
+                            DropdownMenuItem(value: 'ta', child: Text('Tamil')),
+                            DropdownMenuItem(value: 'te', child: Text('Telugu')),
+                            DropdownMenuItem(value: 'th', child: Text('Thai')),
+                            DropdownMenuItem(value: 'tl', child: Text('Filipino')),
+                            DropdownMenuItem(value: 'tr', child: Text('Turkish')),
+                            DropdownMenuItem(value: 'uk', child: Text('Ukrainian')),
+                            DropdownMenuItem(value: 'ur', child: Text('Urdu')),
+                            DropdownMenuItem(value: 'vi', child: Text('Vietnamese')),
+                            DropdownMenuItem(value: 'zh', child: Text('Chinese (Mandarin)')),
+                            DropdownMenuItem(value: 'zu', child: Text('Zulu')),
+                          ],
                         onChanged: (val) =>
                             setModalState(() => _selectedLanguage = val!),
                       ),
@@ -263,7 +325,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[600],
+                        backgroundColor: const Color(0xFFA970FF),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
@@ -277,6 +339,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           genreId: _selectedGenreId,
                           minRating: _minRating,
                           maxRuntime: _maxRuntime,
+                          language: _selectedLanguage,
                         );
                         Navigator.pop(context);
                       },
@@ -355,8 +418,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   label: Text(filter['label']),
                   selected: isSelected,
                   onSelected: (_) => _onGenreSelected(filter['id']),
-                  labelStyle: const TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.w600),
+                  labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black,  
+                  fontWeight: FontWeight.w600,
+                  ),
                   backgroundColor: Colors.white.withOpacity(0.9),
                   selectedColor: const Color(0xFFA970FF),
                   shape: RoundedRectangleBorder(
