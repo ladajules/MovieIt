@@ -164,6 +164,7 @@ class ApiClient {
     String? genreId,
     double? minRating,
     double? maxRuntime,
+    String? language,
   }) async {
     try {
       // Build the query parameters dynamically
@@ -172,6 +173,7 @@ class ApiClient {
       if (genreId != null) queryParameters['genreId'] = genreId;
       if (minRating != null) queryParameters['minRating'] = minRating.toString();
       if (maxRuntime != null) queryParameters['maxRuntime'] = maxRuntime.toString();
+      if(language != null) queryParameters['language'] = language;
 
 
       // Creates the URL: http://localhost:3000/api/movies/filter?genreId=...&minRating=...
