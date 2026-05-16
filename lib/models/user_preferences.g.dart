@@ -18,21 +18,18 @@ class UserPreferencesAdapter extends TypeAdapter<UserPreferences> {
     };
     return UserPreferences(
       notificationsEnabled: fields[0] as bool,
-      calendarView: fields[1] as String,
-      monthlyGoalTarget: fields[2] as int,
+      isDarkMode: fields[1] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserPreferences obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(2)
       ..writeByte(0)
       ..write(obj.notificationsEnabled)
       ..writeByte(1)
-      ..write(obj.calendarView)
-      ..writeByte(2)
-      ..write(obj.monthlyGoalTarget);
+      ..write(obj.isDarkMode);
   }
 
   @override

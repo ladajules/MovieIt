@@ -12,7 +12,7 @@ import 'package:movieit/screens/search_screen.dart';
 import 'package:movieit/screens/planner_screen.dart';
 import 'package:movieit/screens/movie_detail_screen.dart';
 import 'package:go_router/go_router.dart';
-import 'package:movieit/widgets/layout/custom_navbar.dart';
+import 'package:movieit/utils/main_app_shell.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -46,18 +46,9 @@ final GoRouter _router = GoRouter(
         if (state.fullPath == '/search') activeCategory = 'Search';
         if (state.fullPath == '/planner') activeCategory = 'Planner';
 
-        return Scaffold(
-          backgroundColor: Colors.black,
-          extendBodyBehindAppBar: true,
-          appBar: CustomNavBar(
-            activeCategory: activeCategory,
-            onTap: (category) {
-               if (category == 'Home') context.go('/');
-               if (category == 'Search') context.go('/search');
-               if (category == 'Planner') context.go('/planner');
-            },
-          ),
-          body: child,
+        return MainAppShell(
+          child: child,
+          activeCategory: activeCategory
         );
       },
       routes: [

@@ -26,6 +26,8 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
   List<String> _platforms = []; 
   bool _isLoadingPlatforms = true;
 
+  int _selectedReminder = 10;
+
   @override
   void initState() {
     super.initState();
@@ -163,7 +165,7 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
               Expanded(
                 flex: 6,
                 child: Padding(
-                  padding: const EdgeInsets.all(32.0),
+                  padding: const EdgeInsets.all(24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -181,97 +183,132 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                       ),
                       const SizedBox(height: 24),
 
-                      Text('DATE', style: AppStyles.label(size: 11)),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          _QuickPill(
-                            label: 'Tonight',
-                            isActive: isTonight,
-                            onTap: () => setState(() => _selectedDate = now),
-                          ),
-                          const SizedBox(width: 10),
-                          _QuickPill(
-                            label: 'Tomorrow',
-                            isActive: isTomorrow,
-                            onTap: () => setState(() => _selectedDate = now.add(const Duration(days: 1))),
-                          ),
-                          const SizedBox(width: 10),
-                          _QuickPill(
-                            label: (!isTonight && !isTomorrow && _selectedDate != null)
-                                ? DateFormat('MMM d').format(_selectedDate!)
-                                : 'Pick Date',
-                            icon: Icons.calendar_today_rounded,
-                            isActive: (!isTonight && !isTomorrow && _selectedDate != null),
-                            onTap: _pickDate,
-                          ),
-                        ],
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column (
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                             Text('DATE', style: AppStyles.label(size: 11)),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    _QuickPill(
+                                      label: 'Tonight',
+                                      isActive: isTonight,
+                                      onTap: () => setState(() => _selectedDate = now),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _QuickPill(
+                                      label: 'Tomorrow',
+                                      isActive: isTomorrow,
+                                      onTap: () => setState(() => _selectedDate = now.add(const Duration(days: 1))),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _QuickPill(
+                                      label: (!isTonight && !isTomorrow && _selectedDate != null)
+                                          ? DateFormat('MMM d').format(_selectedDate!)
+                                          : 'Pick Date',
+                                      icon: Icons.calendar_today_rounded,
+                                      isActive: (!isTonight && !isTomorrow && _selectedDate != null),
+                                      onTap: _pickDate,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+
+                                Text('TIME', style: AppStyles.label(size: 11)),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    _QuickPill(
+                                      label: '8:00 PM',
+                                      isActive: is8PM,
+                                      onTap: () => setState(() => _selectedTime = const TimeOfDay(hour: 20, minute: 0)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _QuickPill(
+                                      label: '10:00 PM',
+                                      isActive: is10PM,
+                                      onTap: () => setState(() => _selectedTime = const TimeOfDay(hour: 22, minute: 0)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _QuickPill(
+                                      label: (!is8PM && !is10PM && _selectedTime != null)
+                                          ? _selectedTime!.format(context)
+                                          : 'Pick Time',
+                                      icon: Icons.access_time_rounded,
+                                      isActive: (!is8PM && !is10PM && _selectedTime != null),
+                                      onTap: _pickTime,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+
+                                Text('REMINDER', style: AppStyles.label(size: 11)),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    _QuickPill(
+                                      label: '5 mins',
+                                      isActive: _selectedReminder == 5,
+                                      onTap: () => setState(() => _selectedReminder = 5),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _QuickPill(
+                                      label: '10 mins',
+                                      isActive: _selectedReminder == 10,
+                                      onTap: () => setState(() => _selectedReminder = 10),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _QuickPill(
+                                      label: '30 mins',
+                                      isActive: _selectedReminder == 30,
+                                      onTap: () => setState(() => _selectedReminder = 30),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 24),
+
+                                Text('WHERE TO WATCH', style: AppStyles.label(size: 11)),
+                                const SizedBox(height: 10),
+                                DropdownButtonFormField<String>(
+                                  dropdownColor: AppColors.plannerCard,
+                                  value: _selectedPlatform,
+                                  hint: Text(_isLoadingPlatforms ? 'Loading...' : 'Select a platform', style: AppStyles.body(size: 14)),
+                                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: AppColors.plannerSurface,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppColors.cardBorder),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppColors.cardBorder),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppColors.softPeriwinkle),
+                                    ),
+                                  ),
+                                  items: _platforms.map((String platform) {
+                                    return DropdownMenuItem(
+                                      value: platform,
+                                      child: Text(platform, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                                    );
+                                  }).toList(),
+                                  onChanged: (val) => setState(() => _selectedPlatform = val),
+                                ),
+                             ]
+                          )
+                        )
                       ),
-                      const SizedBox(height: 24),
 
-                      Text('TIME', style: AppStyles.label(size: 11)),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          _QuickPill(
-                            label: '8:00 PM',
-                            isActive: is8PM,
-                            onTap: () => setState(() => _selectedTime = const TimeOfDay(hour: 20, minute: 0)),
-                          ),
-                          const SizedBox(width: 10),
-                          _QuickPill(
-                            label: '10:00 PM',
-                            isActive: is10PM,
-                            onTap: () => setState(() => _selectedTime = const TimeOfDay(hour: 22, minute: 0)),
-                          ),
-                          const SizedBox(width: 10),
-                          _QuickPill(
-                            label: (!is8PM && !is10PM && _selectedTime != null)
-                                ? _selectedTime!.format(context)
-                                : 'Pick Time',
-                            icon: Icons.access_time_rounded,
-                            isActive: (!is8PM && !is10PM && _selectedTime != null),
-                            onTap: _pickTime,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      Text('WHERE TO WATCH', style: AppStyles.label(size: 11)),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        dropdownColor: AppColors.plannerCard,
-                        value: _selectedPlatform,
-                        hint: Text(_isLoadingPlatforms ? 'Loading...' : 'Select a platform', style: AppStyles.body(size: 14)),
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: AppColors.plannerSurface,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.cardBorder),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.cardBorder),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.softPeriwinkle),
-                          ),
-                        ),
-                        items: _platforms.map((String platform) {
-                          return DropdownMenuItem(
-                            value: platform,
-                            child: Text(platform, style: const TextStyle(color: Colors.white, fontSize: 14)),
-                          );
-                        }).toList(),
-                        onChanged: (val) => setState(() => _selectedPlatform = val),
-                      ),
-
-                      const Spacer(),
-
+                      const SizedBox(height: 16),
+                      
                       SizedBox(
                         width: double.infinity,
                         height: 50,
@@ -310,6 +347,8 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                                   platform: _selectedPlatform!, 
                                   runtime: widget.movie.runtime, 
                                   genres: widget.movie.genres,
+                                  reminderOffsetMinutes: _selectedReminder,
+                                  isNotified: false,
                                 );
 
                                 await db.scheduleEvent(event);

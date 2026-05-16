@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:movieit/widgets/hover_action_icon.dart';
 import 'package:movieit/widgets/notification_widget.dart';
+import 'package:movieit/widgets/settings_widget.dart';
 
 class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
   final String activeCategory;
@@ -77,7 +78,23 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
                   HoverActionIcon(
                     icon: Icons.settings_rounded,
                     onTap: () {
-                      /// TODO: pop-up modal showing settings? 
+                      showGeneralDialog(
+                        context: context,
+                        barrierColor: Colors.transparent,
+                        barrierDismissible: true, 
+                        barrierLabel: "Dismiss Settiings",
+                        transitionDuration: const Duration(milliseconds: 200),
+                        pageBuilder: (context, animation, secondaryAnimation) {
+                          return Align(
+                            alignment: Alignment.topRight,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 70, right: 24), 
+                              // 2. Call the new widget name here
+                              child: const SettingsWidget(),
+                        ),
+                      );
+                    },
+                      );
                     },
                   ),
                 ],

@@ -29,13 +29,15 @@ class ScheduledEventAdapter extends TypeAdapter<ScheduledEvent> {
       rating: fields[9] as double?,
       note: fields[10] as String?,
       isWatched: fields[11] as bool,
+      reminderOffsetMinutes: fields[12] as int,
+      isNotified: fields[13] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, ScheduledEvent obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -59,7 +61,11 @@ class ScheduledEventAdapter extends TypeAdapter<ScheduledEvent> {
       ..writeByte(10)
       ..write(obj.note)
       ..writeByte(11)
-      ..write(obj.isWatched);
+      ..write(obj.isWatched)
+      ..writeByte(12)
+      ..write(obj.reminderOffsetMinutes)
+      ..writeByte(13)
+      ..write(obj.isNotified);
   }
 
   @override
