@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
 import 'package:movieit/models/sources_model.dart';
+import 'package:movieit/models/user_preferences.dart';
+import 'package:movieit/widgets/universal_banner.dart';
 import 'package:movieit/widgets/where_to_watch_section.dart';
 import '../models/movie_details_model.dart';
 import '../widgets/movie_detail_hero_section.dart';
@@ -55,6 +58,21 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     setState(() {
       _isInWatchlist = _dbService.isInWatchlist(movie.id);
     });
+
+    final prefsBox = Hive.box<UserPreferences>('user_preferences');
+    final prefs = prefsBox.get('current_prefs');
+
+    if (prefs != null && prefs.notificationsEnabled){
+    UniversalBanner.show(
+          context: context,
+          title: _isInWatchlist ? "Added to Watchlist" : "Removed from Watchlist",
+          subTitle: _isInWatchlist 
+              ? "${item.title} is waiting for you." 
+              : "${item.title} removed from your list.",
+          imageUrl: item.posterPath,
+        );
+    }
+   
   }
 
   @override

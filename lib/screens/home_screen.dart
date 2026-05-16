@@ -20,6 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
       Provider.of<MovieProvider>(context, listen: false).loadTrendingAndDiscoverAndTop4();
     });
   }
+
+  
   
  
   @override

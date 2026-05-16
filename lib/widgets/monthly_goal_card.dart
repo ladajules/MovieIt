@@ -23,7 +23,7 @@ class MonthlyGoalCard extends StatelessWidget {
         final engine = StatsEngine(eventsBox, stats);
         final current = engine.getCurrentMonthProgress();
         
-        final target = LocalDbService().getPreferences().monthlyGoalTarget;
+        final target = 4;
         
         final progress = (current / target).clamp(0.0, 1.0);
         final isComplete = current >= target;

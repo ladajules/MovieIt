@@ -7,15 +7,12 @@ class UserPreferences extends HiveObject {
   bool notificationsEnabled;
 
   @HiveField(1)
-  String calendarView; // monthly or weekly
+  bool isDarkMode; // monthly or weekly
 
-  @HiveField(2)
-  int monthlyGoalTarget;
 
   UserPreferences({
     this.notificationsEnabled = true,
-    this.calendarView = 'monthly',
-    this.monthlyGoalTarget = 4,
+    this.isDarkMode = true,
   });
 }
 

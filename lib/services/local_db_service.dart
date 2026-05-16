@@ -168,9 +168,6 @@ class LocalDbService {
         'genreIds': w.genreIds,
         'cachedAt': w.cachedAt.toIso8601String(),
       }).toList(),
-      'preferences': {
-         'monthlyGoalTarget': getPreferences().monthlyGoalTarget,
-      }
     };
 
     final jsonString = jsonEncode(backup);
@@ -210,6 +207,8 @@ class LocalDbService {
             genres: List<String>.from(e['genres'] ?? []),
             isReviewed: e['isReviewed'] ?? false,
             isWatched: e['isWatched'] ?? false,
+            reminderOffsetMinutes: e['reminderOffsetMinutes'] ?? 0,
+            isNotified: e['isNotified'] ?? false,
           );
           event.rating = e['rating']?.toDouble();
           event.note = e['note'];
@@ -247,12 +246,6 @@ class LocalDbService {
         }
       }
 
-      if (backup['preferences'] != null) {
-         final p = backup['preferences'];
-         final prefs = UserPreferences(); 
-         prefs.monthlyGoalTarget = p['monthlyGoalTarget'] ?? 4;
-         await savePreferences(prefs);
-      }
       return true;
     }
     return false; 
@@ -284,6 +277,8 @@ class LocalDbService {
         genres: ['Action'],
         isReviewed: false,
         isWatched: true, 
+        reminderOffsetMinutes: 10,
+        isNotified: false,
       ),
       ScheduledEvent(
         id: 'test_2',
@@ -295,7 +290,9 @@ class LocalDbService {
         runtime: 90,
         genres: ['Drama'],
         isReviewed: true,
-        isWatched: true, 
+        isWatched: true,
+        reminderOffsetMinutes: 10,
+        isNotified: false, 
       ),
       ScheduledEvent(
         id: 'test_3',
@@ -308,6 +305,8 @@ class LocalDbService {
         genres: ['Sci-Fi'],
         isReviewed: false,
         isWatched: true, 
+        reminderOffsetMinutes: 10,
+        isNotified: false,
       ),
       ScheduledEvent(
         id: 'test_4',
@@ -320,6 +319,8 @@ class LocalDbService {
         genres: ['Thriller'],
         isReviewed: true,
         isWatched: true, 
+        reminderOffsetMinutes: 10,
+        isNotified: false,
       ),
     ];
 

@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:hive/hive.dart';
 part 'scheduled_event.g.dart';
 
@@ -39,6 +40,12 @@ class ScheduledEvent extends HiveObject {
   @HiveField(11)
   bool isWatched;
 
+  @HiveField(12)
+  final int reminderOffsetMinutes;
+
+  @HiveField(13)
+  bool isNotified;
+
   ScheduledEvent({
     required this.id,
     required this.movieId,
@@ -52,5 +59,7 @@ class ScheduledEvent extends HiveObject {
     this.rating,
     this.note,
     this.isWatched = false,
+    required this.reminderOffsetMinutes,
+    this.isNotified = false,  
   });
 }
