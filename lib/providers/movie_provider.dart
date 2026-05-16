@@ -43,6 +43,7 @@ class MovieProvider extends ChangeNotifier{
     int? genreId,
     required double minRating,
     required double maxRuntime,
+    required String language,
   }) async {
     _setLoading(true);
     _searchMovies.clear(); // Clear previous results to show fresh filtered ones
@@ -54,6 +55,7 @@ class MovieProvider extends ChangeNotifier{
         genreId: genreId?.toString(),
         minRating: minRating,
         maxRuntime: maxRuntime,
+        language: language,
       );
 
 
