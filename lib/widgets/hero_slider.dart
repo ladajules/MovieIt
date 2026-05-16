@@ -3,7 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:movieit/models/movie_models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:movieit/models/user_preferences.dart';
 import 'package:movieit/widgets/hover_action_btn.dart';
+import 'package:movieit/widgets/universal_banner.dart';
 import 'dart:async';
 
 import '../services/local_db_service.dart';
@@ -202,6 +204,20 @@ class _HeroSliderState extends State<HeroSlider> {
                               );
                               
                               await _dbService.toggleWatchlist(watchlistItem);
+
+                              final prefsBox = Hive.box<UserPreferences>('user_preferences');
+                              final prefs = prefsBox.get('current_prefs');
+
+                              if (prefs != null && prefs.notificationsEnabled) {
+                                    UniversalBanner.show(
+                                      context: context,
+                                      title: isInWatchlist ? "Removed from Watchlist" : "Added to Watchlist",
+                                      subTitle: isInWatchlist 
+                                          ? "${item.title} removed from your list." 
+                                          : "${item.title} is waiting for you.",
+                                      imageUrl: item.posterUrl,
+                                    );
+                              }
                             },
                           );
                         },

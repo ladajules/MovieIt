@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:movieit/models/scheduled_event.dart';
+import 'package:movieit/models/user_preferences.dart';
 import 'package:movieit/models/watchlist_item.dart';
 import 'package:movieit/services/local_db_service.dart';
 import 'package:movieit/utils/tmdb_image_helper.dart';
+import 'package:movieit/widgets/universal_banner.dart';
 import '../services/api_client.dart';
 import '../models/movie_details_model.dart';
 import '../theme/app_colors.dart';
@@ -308,7 +311,7 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                       ),
 
                       const SizedBox(height: 16),
-                      
+
                       SizedBox(
                         width: double.infinity,
                         height: 50,
@@ -354,6 +357,19 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                                 await db.scheduleEvent(event);
 
                                 Navigator.of(context).pop();
+
+                                final prefsBox = Hive.box<UserPreferences>('user_preferences');
+                                final prefs = prefsBox.get('current_prefs');
+
+                                if (prefs != null && prefs.notificationsEnabled) {
+                                  UniversalBanner.show(     
+                                    context: context,
+                                    title: "${event.movieTitle} Successfully Scheduled!",
+                                    subTitle: "At ${DateFormat('h:mm a').format(event.scheduledDate)} on ${event.platform}.",
+                                    imageUrl: event.posterUrl,
+                                  );
+                                }
+                                
                               }
                               : null,
                           style: ElevatedButton.styleFrom(
