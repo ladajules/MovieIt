@@ -123,8 +123,8 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withOpacity(0.9),
-                            Colors.black.withOpacity(0.4),
+                            Colors.black.withValues(alpha: 0.9),
+                            Colors.black.withValues(alpha: 0.4),
                             Colors.transparent,
                           ],
                         ),
@@ -447,6 +447,374 @@ class _QuickPill extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class ScheduleFromWatchlistModal extends StatefulWidget {
+  final List<WatchlistItem> movies;
+
+  const ScheduleFromWatchlistModal({super.key, required this.movies});
+
+  @override
+  State<ScheduleFromWatchlistModal> createState() => _ScheduleFromWatchlistModalState();
+}
+
+class _ScheduleFromWatchlistModalState extends State<ScheduleFromWatchlistModal> {
+  int _currentIndex = 0;
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+  String? _selectedPlatform;
+  List<String> _platforms = [];
+  bool _isLoadingPlatforms = true;
+  int _selectedReminder = 10;
+
+  WatchlistItem get _current => widget.movies[_currentIndex];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPlatforms();
+  }
+
+  void _goTo(int index) {
+    setState(() {
+      _currentIndex = index;
+      _selectedDate = null;
+      _selectedTime = null;
+      _selectedPlatform = null;
+      _platforms = [];
+      _isLoadingPlatforms = true;
+    });
+    _fetchPlatforms();
+  }
+
+  Future<void> _fetchPlatforms() async {
+    try {
+      final sources = await ApiClient().getSources(_current.tmdbId.toString());
+      setState(() {
+        _platforms = sources.map((s) => s.name).toSet().cast<String>().toList();
+        _platforms.add('Local File');
+        _platforms.add('Pirated HEHE');
+        _platforms.add('In Theater');
+        _isLoadingPlatforms = false;
+      });
+    } catch (_) {
+      setState(() {
+        _platforms = ['Local File', 'Pirated HEHE', 'In Theater'];
+        _isLoadingPlatforms = false;
+      });
+    }
+  }
+
+  Future<void> _pickDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(primary: AppColors.softPeriwinkle),
+        ),
+        child: child!,
+      ),
+    );
+    if (date != null) setState(() => _selectedDate = date);
+  }
+
+  Future<void> _pickTime() async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 20, minute: 0),
+      builder: (context, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(primary: AppColors.softPeriwinkle),
+        ),
+        child: child!,
+      ),
+    );
+    if (time != null) setState(() => _selectedTime = time);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final isTonight = _selectedDate?.day == now.day;
+    final isTomorrow = _selectedDate?.day == now.add(const Duration(days: 1)).day;
+    final is8PM = _selectedTime?.hour == 20 && _selectedTime?.minute == 0;
+    final is10PM = _selectedTime?.hour == 22 && _selectedTime?.minute == 0;
+    final posterUrl = TmdbImageHelper.buildUrl(_current.posterPath, size: 'w500');
+    final total = widget.movies.length;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: 750,
+          height: 480,
+          color: AppColors.plannerBg,
+          child: Row(
+            children: [
+              // Left: poster + prev/next nav
+              Expanded(
+                flex: 4,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    posterUrl.isNotEmpty
+                        ? Image.network(posterUrl, fit: BoxFit.cover)
+                        : Container(color: AppColors.plannerSurface, child: const Icon(Icons.movie, color: AppColors.textMuted, size: 48)),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.9),
+                            Colors.black.withValues(alpha: 0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 24,
+                      bottom: 32,
+                      right: 16,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'SCHEDULING',
+                            style: GoogleFonts.inter(
+                              color: AppColors.softPeriwinkle,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _current.title.toUpperCase(),
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              height: 1.1,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              _NavButton(
+                                icon: Icons.arrow_back_ios_new_rounded,
+                                enabled: _currentIndex > 0,
+                                onTap: () => _goTo(_currentIndex - 1),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                '${_currentIndex + 1} / $total',
+                                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                              ),
+                              const SizedBox(width: 10),
+                              _NavButton(
+                                icon: Icons.arrow_forward_ios_rounded,
+                                enabled: _currentIndex < total - 1,
+                                onTap: () => _goTo(_currentIndex + 1),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Right: scheduling form
+              Expanded(
+                flex: 6,
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Plan your night', style: AppStyles.heading(size: 20)),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                            onPressed: () => Navigator.of(context).pop(),
+                            hoverColor: Colors.white10,
+                            splashRadius: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('DATE', style: AppStyles.label(size: 11)),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  _QuickPill(label: 'Tonight', isActive: isTonight, onTap: () => setState(() => _selectedDate = now)),
+                                  const SizedBox(width: 10),
+                                  _QuickPill(label: 'Tomorrow', isActive: isTomorrow, onTap: () => setState(() => _selectedDate = now.add(const Duration(days: 1)))),
+                                  const SizedBox(width: 10),
+                                  _QuickPill(
+                                    label: (!isTonight && !isTomorrow && _selectedDate != null) ? DateFormat('MMM d').format(_selectedDate!) : 'Pick Date',
+                                    icon: Icons.calendar_today_rounded,
+                                    isActive: (!isTonight && !isTomorrow && _selectedDate != null),
+                                    onTap: _pickDate,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Text('TIME', style: AppStyles.label(size: 11)),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  _QuickPill(label: '8:00 PM', isActive: is8PM, onTap: () => setState(() => _selectedTime = const TimeOfDay(hour: 20, minute: 0))),
+                                  const SizedBox(width: 10),
+                                  _QuickPill(label: '10:00 PM', isActive: is10PM, onTap: () => setState(() => _selectedTime = const TimeOfDay(hour: 22, minute: 0))),
+                                  const SizedBox(width: 10),
+                                  _QuickPill(
+                                    label: (!is8PM && !is10PM && _selectedTime != null) ? _selectedTime!.format(context) : 'Pick Time',
+                                    icon: Icons.access_time_rounded,
+                                    isActive: (!is8PM && !is10PM && _selectedTime != null),
+                                    onTap: _pickTime,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Text('REMINDER', style: AppStyles.label(size: 11)),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  _QuickPill(label: '5 mins', isActive: _selectedReminder == 5, onTap: () => setState(() => _selectedReminder = 5)),
+                                  const SizedBox(width: 10),
+                                  _QuickPill(label: '10 mins', isActive: _selectedReminder == 10, onTap: () => setState(() => _selectedReminder = 10)),
+                                  const SizedBox(width: 10),
+                                  _QuickPill(label: '30 mins', isActive: _selectedReminder == 30, onTap: () => setState(() => _selectedReminder = 30)),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Text('WHERE TO WATCH', style: AppStyles.label(size: 11)),
+                              const SizedBox(height: 10),
+                              DropdownButtonFormField<String>(
+                                dropdownColor: AppColors.plannerCard,
+                                initialValue: _selectedPlatform,
+                                hint: Text(_isLoadingPlatforms ? 'Loading...' : 'Select a platform', style: AppStyles.body(size: 14)),
+                                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: AppColors.plannerSurface,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.softPeriwinkle)),
+                                ),
+                                items: _platforms.map((p) => DropdownMenuItem(value: p, child: Text(p, style: const TextStyle(color: Colors.white, fontSize: 14)))).toList(),
+                                onChanged: (val) => setState(() => _selectedPlatform = val),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: (_selectedDate != null && _selectedTime != null && _selectedPlatform != null)
+                              ? () async {
+                                  final db = LocalDbService();
+                                  final scheduledDateTime = DateTime(
+                                    _selectedDate!.year, _selectedDate!.month, _selectedDate!.day,
+                                    _selectedTime!.hour, _selectedTime!.minute,
+                                  );
+                                  final event = ScheduledEvent(
+                                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                    movieId: _current.tmdbId.toString(),
+                                    movieTitle: _current.title,
+                                    posterUrl: posterUrl,
+                                    scheduledDate: scheduledDateTime,
+                                    platform: _selectedPlatform!,
+                                    runtime: _current.runtimeMinutes,
+                                    genres: [],
+                                    reminderOffsetMinutes: _selectedReminder,
+                                    isNotified: false,
+                                  );
+                                  await db.scheduleEvent(event);
+                                  if (!context.mounted) return;
+                                  Navigator.of(context).pop();
+                                  final prefsBox = Hive.box<UserPreferences>('user_preferences');
+                                  final prefs = prefsBox.get('current_prefs');
+                                  if (prefs != null && prefs.notificationsEnabled) {
+                                    UniversalBanner.show(
+                                      context: context,
+                                      title: '${event.movieTitle} Successfully Scheduled!',
+                                      subTitle: 'At ${DateFormat('h:mm a').format(event.scheduledDate)} on ${event.platform}.',
+                                      imageUrl: event.posterUrl,
+                                    );
+                                  }
+                                }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.softPeriwinkle,
+                            disabledBackgroundColor: AppColors.softPeriwinkle.withValues(alpha: 0.3),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'Lock in Movie Night',
+                            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavButton extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _NavButton({required this.icon, required this.enabled, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: enabled ? Colors.white.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.05),
+          shape: BoxShape.circle,
+          border: Border.all(color: enabled ? Colors.white30 : Colors.white10),
+        ),
+        child: Icon(icon, size: 14, color: enabled ? Colors.white : Colors.white24),
       ),
     );
   }
