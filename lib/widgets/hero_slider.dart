@@ -206,7 +206,7 @@ class _HeroSliderState extends State<HeroSlider> {
                               await _dbService.toggleWatchlist(watchlistItem);
 
                               final prefsBox = Hive.box<UserPreferences>('user_preferences');
-                              final prefs = prefsBox.get('current_prefs');
+                              final prefs = prefsBox.get('current_prefs') ?? UserPreferences();
 
                               if (prefs != null && prefs.notificationsEnabled) {
                                     UniversalBanner.show(

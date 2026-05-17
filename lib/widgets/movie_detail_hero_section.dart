@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+  import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/movie_details_model.dart';
 import '../../widgets/schedule_movie_modal.dart';
