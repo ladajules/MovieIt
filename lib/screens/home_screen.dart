@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movieit/providers/movie_provider.dart';
+import 'package:movieit/widgets/layout/custom_footer.dart';
 import 'package:provider/provider.dart';
 import '../widgets/hero_slider.dart';
 import '../widgets/horizontal_movie_list.dart';
@@ -65,14 +66,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           HorizontalMovieList(movies: movieProvider.upcomingMoviesList, sectionTitle: "Upcoming Movies",),
                           
                           const SizedBox(height: 60),
+
+                          CustomFooter(),
                         ],
                       ),
                     );
             }
           )
-          
         ],
       ),
+
     );
   }
 

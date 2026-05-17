@@ -50,7 +50,7 @@ class SettingsWidget extends StatelessWidget{
                   const SizedBox(width: 12),
                   Text(
                     "Settings",
-                    style: GoogleFonts.bagelFatOne(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 20,
                     ),

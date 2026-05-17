@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:movieit/providers/movie_provider.dart';
 import 'package:movieit/theme/app_colors.dart';
 import 'package:movieit/theme/app_styles.dart';
+import 'package:movieit/widgets/layout/custom_footer.dart';
 import 'package:movieit/widgets/movieit_search_bar.dart';
 import 'package:movieit/widgets/search_result_list.dart';
 import 'package:provider/provider.dart';
@@ -858,72 +859,80 @@ class _SearchScreenState extends State<SearchScreen> {
         backgroundColor: Colors.transparent,
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16),
-                MovieItSearchBar(onChanged: _onSearch),
-                const SizedBox(height: 16),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildFilterOptions(),
-                ),
-                const SizedBox(height: 16),
-                Consumer<MovieProvider>(
-                  builder: (context, movieProvider, child) {
-                    if (movieProvider.isLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-
-                    if (movieProvider.errorMessage.isNotEmpty) {
-                      return Center(
-                        child: Text(
-                          movieProvider.errorMessage,
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontSize: 18,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  const SizedBox(height: 16),
+                  MovieItSearchBar(onChanged: _onSearch),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _buildFilterOptions(),
+                  ),
+                  const SizedBox(height: 16),
+                  Consumer<MovieProvider>(
+                    builder: (context, movieProvider, child) {
+                      if (movieProvider.isLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+              
+                      if (movieProvider.errorMessage.isNotEmpty) {
+                        return Center(
+                          child: Text(
+                            movieProvider.errorMessage,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 18,
+                            ),
                           ),
-                        ),
-                      );
-                    }
-
-                    final movieListToDisplay = (_query.isEmpty && !_isFilterActive)
-                        ? movieProvider.discoverMoviesList
-                        : movieProvider.searchMoviesList;
-
-                    if (movieListToDisplay.isEmpty &&
-                        (_query.isNotEmpty || _isFilterActive)) {
-                      return Center(
-                        child: Column(
-                          children: [
-                            Lottie.asset(
-                              'assets/animations/Search.json',
-                              width: 250,
-                              height: 250,
-                            ),
-                            const Text(
-                              'No movies found.',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
+                        );
+                      }
+              
+                      final movieListToDisplay = (_query.isEmpty && !_isFilterActive)
+                          ? movieProvider.discoverMoviesList
+                          : movieProvider.searchMoviesList;
+              
+                      if (movieListToDisplay.isEmpty &&
+                          (_query.isNotEmpty || _isFilterActive)) {
+                        return Center(
+                          child: Column(
+                            children: [
+                              Lottie.asset(
+                                'assets/animations/Search.json',
+                                width: 250,
+                                height: 250,
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    return SearchResultGrid(movies: movieListToDisplay);
-                  },
-                ),
-              ],
+                              const Text(
+                                'No movies found.',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+              
+                      return SearchResultGrid(movies: movieListToDisplay);
+                    },
+                  ),
+                  const SizedBox(height: 60),
+                ],
+              ),
             ),
+                const CustomFooter(),
+              ],
           ),
         ),
       ),
+    ),
     );
   }
 }
