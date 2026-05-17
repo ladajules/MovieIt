@@ -17,6 +17,7 @@ class MovieProvider extends ChangeNotifier{
   List<Movie> _upcomingMovies = [];
   MovieDetails? _movieDetails;
   List<Sources>? _sourcesList = [];
+  List<Movie> _getSimilarMovies = [];
 
 
   bool _isLoading = false;
@@ -33,6 +34,7 @@ class MovieProvider extends ChangeNotifier{
   List<Movie> get upcomingMoviesList => _upcomingMovies;
   MovieDetails? get movieDetailsMap => _movieDetails;
   List<Sources>? get sourcesList => _sourcesList;
+  List<Movie> get getSimilarMovies => _getSimilarMovies;
  
  
   bool get isLoading => _isLoading;
