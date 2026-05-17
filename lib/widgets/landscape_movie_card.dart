@@ -67,8 +67,8 @@ class _LandscapeMovieCardState extends State<LandscapeMovieCard> {
               const SizedBox(height: 12),
               
               Text(
-                widget.item.title ?? 'Unknown',
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                widget.item.title,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _isHovered ? AppColors.accentDim : Colors.white),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

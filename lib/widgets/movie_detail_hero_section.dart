@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/movie_details_model.dart';
 import '../../widgets/schedule_movie_modal.dart';
 
+import '../theme/app_colors.dart';
+
 class MovieHeroSection extends StatelessWidget {
   final MovieDetails movie;
   final VoidCallback? onAddToWatchlist;
@@ -21,11 +23,12 @@ class MovieHeroSection extends StatelessWidget {
     final isWide = screenWidth > 900;
 
     return SizedBox(
-      height: isWide ? 520 : null,
+      height: isWide ? 720 : null,
       child: Stack(
         children: [
           _BackdropImage(url: movie.backdropUrl),
           const _GradientOverlay(),
+
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.symmetric(
@@ -50,12 +53,13 @@ class _BackdropImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (url == null) {
-      return Container(color: const Color(0xFF1A1A1A));
+      return Positioned.fill(child: Container(color: AppColors.charcoal));
     }
     return Positioned.fill(
       child: Image.network(
         url!,
         fit: BoxFit.cover,
+        alignment: Alignment.center,
         frameBuilder: (context, child, frame, _) =>
             frame == null ? Container(color: const Color(0xFF1A1A1A)) : child,
         errorBuilder: (_, __, ___) => Container(color: const Color(0xFF1A1A1A)),
