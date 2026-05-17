@@ -6,13 +6,8 @@ class UserPreferences extends HiveObject {
   @HiveField(0)
   bool notificationsEnabled;
 
-  @HiveField(1)
-  bool isDarkMode; // monthly or weekly
-
-
   UserPreferences({
     this.notificationsEnabled = true,
-    this.isDarkMode = true,
   });
 }
 

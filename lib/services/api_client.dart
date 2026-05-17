@@ -9,7 +9,7 @@ import 'package:movieit/models/sources_model.dart';
 
 
 class ApiClient {
-   
+  
   static const String _baseUrl = 'http://localhost:3000/api/movies';
   static const String _baseUrlWatchmode = 'http://localhost:3000/api/watchmode';
 
@@ -237,6 +237,36 @@ class ApiClient {
       
     } catch (error) {
       logger.e('ApiClient error (Similar Movies), $error');
+      rethrow;
+    }
+  }
+
+  Future<Map<int, String>> getGenres() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/genres'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return {for (var item in data) item['id'] as int: item['name'] as String};
+      } else {
+        throw Exception('Failed to load genres');
+      }
+    } catch (e) {
+      logger.e('ApiClient error (Genres), $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, String>> getLanguages() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/languages'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return {for (var item in data) item['code'] as String: item['name'] as String};
+      } else {
+        throw Exception('Failed to load languages');
+      }
+    } catch (e) {
+      logger.e('ApiClient error (Languages), $e');
       rethrow;
     }
   }

@@ -18,7 +18,8 @@ class MovieProvider extends ChangeNotifier{
   MovieDetails? _movieDetails;
   List<Sources>? _sourcesList = [];
   List<Movie> _getSimilarMovies = [];
-
+  Map<int, String> _genreLabels = {};
+  Map<String, String> _languageLabels = {};
 
   bool _isLoading = false;
   String _errorMessage = '';
@@ -35,6 +36,8 @@ class MovieProvider extends ChangeNotifier{
   MovieDetails? get movieDetailsMap => _movieDetails;
   List<Sources>? get sourcesList => _sourcesList;
   List<Movie> get getSimilarMovies => _getSimilarMovies;
+  Map<int, String> get genreLabels => _genreLabels;
+  Map<String, String> get languageLabels => _languageLabels;
  
  
   bool get isLoading => _isLoading;
@@ -156,6 +159,23 @@ class MovieProvider extends ChangeNotifier{
       _errorMessage = 'Failed to load sources';
     } finally{
       _setLoading(false);
+    }
+  }
+
+  Future<void> loadFilterOptions() async {
+    if (_genreLabels.isNotEmpty && _languageLabels.isNotEmpty) return;
+
+    try {
+      final results = await Future.wait([
+        apiClient.getGenres(),
+        apiClient.getLanguages(),
+      ]);
+
+      _genreLabels = results[0] as Map<int, String>;
+      _languageLabels = results[1] as Map<String, String>;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Failed to load filter options: $e");
     }
   }
 

@@ -5,8 +5,8 @@ import 'package:movieit/models/watchlist_item.dart';
 import 'package:movieit/widgets/import_export_modal.dart';
 import 'package:movieit/widgets/schedule_movie_modal.dart';
 import 'package:movieit/widgets/universal_banner.dart';
-import '../../theme/app_colors.dart';
 import '../../theme/app_styles.dart';
+import '../../theme/app_colors.dart';
 
 import '../widgets/calendar_card.dart';
 import '../widgets/layout/custom_footer.dart';

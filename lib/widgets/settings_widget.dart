@@ -1,9 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hive/hive.dart';
 import 'package:movieit/theme/app_colors.dart';
-import 'package:movieit/widgets/notification_list.dart';
 import 'package:movieit/widgets/settings_list.dart';
 
 class SettingsWidget extends StatelessWidget{
@@ -16,12 +14,12 @@ class SettingsWidget extends StatelessWidget{
       child: Container(
         width: 340,
         decoration: BoxDecoration(
-          color: AppColors.plannerSurface,
+          color: AppColors.headerBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.cardBorder, width: 1.5),
+          border: Border.all(color: AppColors.cardBorder, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.28),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -51,14 +49,18 @@ class SettingsWidget extends StatelessWidget{
                   Text(
                     "Settings",
                     style: GoogleFonts.poppins(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontSize: 20,
                     ),
                   ),
                 ],
               ),
             ),
-            const Divider(color: AppColors.dividerSubtle, height: 1, thickness: 1),
+            Divider(
+              color: AppColors.cardBorder,
+              height: 1,
+              thickness: 1,
+            ),
              Flexible(
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: 380),

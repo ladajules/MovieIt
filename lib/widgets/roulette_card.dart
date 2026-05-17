@@ -64,12 +64,13 @@ class _RouletteCardState extends State<RouletteCard> {
   }
 
   void _openScheduleModal(WatchlistItem item) {
+    final resolvedPosterUrl = TmdbImageHelper.buildUrl(item.posterPath);
     final localMovie = MovieDetails(
       id: item.tmdbId,
       title: item.title,
       overview: 'Overview not available in watchlist cache.', 
-      posterUrl: item.posterPath,
-      backdropUrl: item.posterPath,
+      posterUrl: resolvedPosterUrl,
+      backdropUrl: resolvedPosterUrl,
       year: 'Unknown', 
       rating: 'N/A', 
       director: 'Unknown',    
@@ -182,7 +183,7 @@ class _SpinningState extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               image: DecorationImage(
-                image: NetworkImage(item.posterPath),
+                image: NetworkImage(TmdbImageHelper.buildUrl(item.posterPath, size: 'w185')),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken),
               ),

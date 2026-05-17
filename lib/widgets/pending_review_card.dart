@@ -16,7 +16,9 @@ class PendingReviewCard extends StatelessWidget {
     return ValueListenableBuilder<Box<ScheduledEvent>>(
       valueListenable: LocalDbService().listenToEvents(),
       builder: (context, box, _) {
-        final pendingEvents = box.values.where((e) => e.isWatched && !e.isReviewed).toList();
+        LocalDbService().syncOverdueEventsAsWatched();
+        final pendingEvents =
+            box.values.where((e) => e.isWatched && !e.isReviewed).toList();
         
         if (pendingEvents.isEmpty) {
           return const SizedBox.shrink();

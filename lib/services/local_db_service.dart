@@ -14,6 +14,7 @@ class LocalDbService {
   static const String _statsBoxName = 'user_stats';
   static const String _prefsBoxName = 'user_preferences';
   static const String _watchlistBoxName = 'watchlist';
+  static bool _isSyncingOverdueEvents = false;
 
   // PREFERNCES
   Box<UserPreferences> get _prefsBox => Hive.box<UserPreferences>(_prefsBoxName);
@@ -66,6 +67,7 @@ class LocalDbService {
     final event = _eventsBox.get(eventId);
     if (event != null && !event.isReviewed) {
       // update evnet
+      event.isWatched = true;
       event.isReviewed = true;
       event.rating = rating;
       event.note = note;
@@ -76,6 +78,27 @@ class LocalDbService {
       stats.totalMoviesRated += 1;
       stats.totalRatingSum += rating;
       await _saveStats(stats);
+    }
+  }
+
+  Future<void> syncOverdueEventsAsWatched() async {
+    if (_isSyncingOverdueEvents) return;
+
+    final now = DateTime.now();
+    final overdueEvents = _eventsBox.values
+        .where((event) => !event.isWatched && !event.scheduledDate.isAfter(now))
+        .toList();
+
+    if (overdueEvents.isEmpty) return;
+
+    _isSyncingOverdueEvents = true;
+    try {
+      for (final event in overdueEvents) {
+        event.isWatched = true;
+        await event.save();
+      }
+    } finally {
+      _isSyncingOverdueEvents = false;
     }
   }
 

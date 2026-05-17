@@ -114,7 +114,7 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
         child: Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A).withOpacity(0.65), //0x33C3B1E1
+            color: const Color(0xFF1A1A1A).withOpacity(0.65),
             borderRadius: BorderRadius.circular(50),
             border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
           ),
@@ -197,7 +197,7 @@ class _GlassNavItemState extends State<_GlassNavItem> {
             children: [
               Icon(
                 widget.icon,
-                color: widget.isActive || _isHovered ? Color(0xFFAC66FF) : Colors.white.withOpacity(0.7),
+                color: widget.isActive || _isHovered ? const Color(0xFFAC66FF) : Colors.white.withOpacity(0.7),
                 size: 24,
               ),
             ],

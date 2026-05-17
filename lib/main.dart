@@ -7,6 +7,7 @@ import 'package:movieit/models/user_stats.dart';
 import 'package:movieit/models/watchlist_item.dart';
 
 import 'package:movieit/providers/movie_provider.dart';
+import 'package:movieit/theme/movieit_theme.dart';
 import 'package:movieit/screens/home_screen.dart';
 import 'package:movieit/screens/search_screen.dart';
 import 'package:movieit/screens/planner_screen.dart';
@@ -86,6 +87,7 @@ class MyApp extends StatelessWidget {
       routerConfig: _router,
       title: 'MovieIT',
       debugShowCheckedModeBanner: false,
+      theme: MovieItTheme.dark(),
     );
   }
 }
