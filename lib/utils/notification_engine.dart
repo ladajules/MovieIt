@@ -12,7 +12,7 @@ class NotificationEngine {
   static void start(BuildContext context){
     if (_timer != null && _timer!.isActive)return;
 
-    _timer = Timer.periodic(const Duration(minutes: 1), (timer){
+    _timer = Timer.periodic(const Duration(seconds: 15), (timer){
      _checkForUpcomingMovies(context);
     });
   }
@@ -24,7 +24,7 @@ class NotificationEngine {
 
   static void _checkForUpcomingMovies(BuildContext context){
     final prefsBox = Hive.box<UserPreferences>('user_preferences');
-    final prefs = prefsBox.get('current_prefs');
+    final prefs = prefsBox.get('current_prefs') ?? UserPreferences();
 
     if (prefs != null && !prefs.notificationsEnabled) return;
 
@@ -32,13 +32,16 @@ class NotificationEngine {
     final now = DateTime.now();
 
     for(var event in eventsBox.values){
+
+      if (event.isNotified) continue;
+
       final reminderTime = event.scheduledDate.subtract(
         Duration(minutes: event.reminderOffsetMinutes),
       );
 
-      if (event.isNotified) return;
 
-      if (now.isAfter(reminderTime)){
+
+      if (now.isAfter(reminderTime) && now.isBefore(event.scheduledDate)){
         UniversalBanner.show(
           context: context, 
           title: "Movie scheduled in ${event.reminderOffsetMinutes} mins!",

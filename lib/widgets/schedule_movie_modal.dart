@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
@@ -29,7 +30,8 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
   List<String> _platforms = []; 
   bool _isLoadingPlatforms = true;
 
-  int _selectedReminder = 10;
+  final TextEditingController _reminderController = TextEditingController(text: '10');
+  String _reminderUnit = 'Minutes';
 
   @override
   void initState() {
@@ -249,24 +251,50 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
 
                                 Text('REMINDER', style: AppStyles.label(size: 11)),
                                 const SizedBox(height: 10),
-                                Row(
+                                
+                               Row(
                                   children: [
-                                    _QuickPill(
-                                      label: '5 mins',
-                                      isActive: _selectedReminder == 5,
-                                      onTap: () => setState(() => _selectedReminder = 5),
+                                    Expanded(
+                                      flex: 2,
+                                      child: TextFormField(
+                                        controller: _reminderController,
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: AppColors.plannerSurface,
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.softPeriwinkle)),
+                                        ),
+                                      ),
                                     ),
-                                    const SizedBox(width: 10),
-                                    _QuickPill(
-                                      label: '10 mins',
-                                      isActive: _selectedReminder == 10,
-                                      onTap: () => setState(() => _selectedReminder = 10),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    _QuickPill(
-                                      label: '30 mins',
-                                      isActive: _selectedReminder == 30,
-                                      onTap: () => setState(() => _selectedReminder = 30),
+                                    const SizedBox(width: 16),
+                                    
+                                    Expanded(
+                                      flex: 1,
+                                      child: DropdownButtonFormField<String>(
+                                        dropdownColor: AppColors.plannerCard,
+                                        value: _reminderUnit,
+                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: AppColors.plannerSurface,
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.softPeriwinkle)),
+                                        ),
+                                        items: ['Minutes', 'Hours', 'Days'].map((String unit) {
+                                          return DropdownMenuItem(
+                                            value: unit,
+                                            child: Text(unit, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) => setState(() => _reminderUnit = val!),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -341,6 +369,12 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                                   await db.toggleWatchlist(watchlistItem);
                                 }
 
+                                final parsedReminder = int.tryParse(_reminderController.text) ?? 10;
+
+                                int totalMinutesOffset = parsedReminder;
+                                  if (_reminderUnit == 'Hours') totalMinutesOffset = parsedReminder * 60;
+                                  if (_reminderUnit == 'Days') totalMinutesOffset = parsedReminder * 1;
+
                                 final event = ScheduledEvent(
                                   id: DateTime.now().millisecondsSinceEpoch.toString(), 
                                   movieId: widget.movie.id.toString(), 
@@ -350,7 +384,7 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                                   platform: _selectedPlatform!, 
                                   runtime: widget.movie.runtime, 
                                   genres: widget.movie.genres,
-                                  reminderOffsetMinutes: _selectedReminder,
+                                  reminderOffsetMinutes: totalMinutesOffset,
                                   isNotified: false,
                                 );
 
