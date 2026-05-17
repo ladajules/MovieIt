@@ -272,7 +272,7 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                                       ),
                                     ),
                                     const SizedBox(width: 16),
-                                    
+
                                     Expanded(
                                       flex: 1,
                                       child: DropdownButtonFormField<String>(
@@ -373,7 +373,7 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
 
                                 int totalMinutesOffset = parsedReminder;
                                   if (_reminderUnit == 'Hours') totalMinutesOffset = parsedReminder * 60;
-                                  if (_reminderUnit == 'Days') totalMinutesOffset = parsedReminder * 1;
+                                  if (_reminderUnit == 'Days') totalMinutesOffset = parsedReminder * 1440;
 
                                 final event = ScheduledEvent(
                                   id: DateTime.now().millisecondsSinceEpoch.toString(), 

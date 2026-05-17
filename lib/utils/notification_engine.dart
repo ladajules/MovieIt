@@ -2,13 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
+import 'package:logger/logger.dart';
 import 'package:movieit/models/scheduled_event.dart';
 import 'package:movieit/models/user_preferences.dart';
 import 'package:movieit/widgets/universal_banner.dart';
 
 class NotificationEngine {
   static Timer? _timer;
-
+  
+  static Logger log = Logger();
   static void start(BuildContext context){
     if (_timer != null && _timer!.isActive)return;
 
@@ -39,12 +41,13 @@ class NotificationEngine {
         Duration(minutes: event.reminderOffsetMinutes),
       );
 
-
+      String convertedTime = _formatReminderTime(event.reminderOffsetMinutes);  
+      
 
       if (now.isAfter(reminderTime) && now.isBefore(event.scheduledDate)){
         UniversalBanner.show(
           context: context, 
-          title: "Movie scheduled in ${event.reminderOffsetMinutes} mins!",
+          title: "Movie scheduled in $convertedTime",
           subTitle: "Get ready to watch ${event.movieTitle} on ${event.platform}.",
           imageUrl: event.posterUrl,
         );
@@ -54,4 +57,35 @@ class NotificationEngine {
       }
     }
   }
+
+  static String _formatReminderTime(int reminderTime){
+    int convertedTime;
+    String placeholder;
+    if (reminderTime % 1440 == 0){
+      convertedTime = reminderTime ~/ 1440;
+      if (convertedTime == 1) {
+        placeholder = "Day";
+      } else {
+        placeholder = "Days";
+      }
+      return "$convertedTime $placeholder!";
+    } else if (reminderTime % 60 == 0){
+      convertedTime = reminderTime ~/ 60;
+      if (convertedTime == 1) {
+        placeholder = "Hour";
+      } else {
+        placeholder = "Hours";
+      }
+      return "$convertedTime $placeholder!";
+    } 
+    if (reminderTime == 1){
+      placeholder = "Minute";
+    } else {
+      placeholder = "Minutes";
+    }
+    return "$reminderTime $placeholder!";
+  }
+
 }
+
+
