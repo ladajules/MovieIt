@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:movieit/models/sources_model.dart';
 import 'package:movieit/models/user_preferences.dart';
+import 'package:movieit/widgets/similar_movies_section.dart';
 import 'package:movieit/widgets/universal_banner.dart';
 import 'package:movieit/widgets/where_to_watch_section.dart';
 import '../models/movie_details_model.dart';
 import '../widgets/movie_detail_hero_section.dart';
 import '../widgets/cast_grid.dart';
 import '../services/api_client.dart';
+import '../models/movie_models.dart';
 
 import '../services/local_db_service.dart';
 import '../models/watchlist_item.dart';
@@ -25,6 +27,7 @@ class MovieDetailScreen extends StatefulWidget {
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
   late Future<MovieDetails> _movieFuture;
   late Future<List<Sources>> _sourcesFuture;
+  late Future<List<Movie>> _similarFuture;
 
   final _dbService = LocalDbService();
   bool _isInWatchlist = false;
@@ -41,6 +44,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   void _fetchData() {
     _movieFuture = ApiClient().getMovieDetails(widget.movieId.toString());
     _sourcesFuture = ApiClient().getSources(widget.movieId.toString());
+    _similarFuture = ApiClient().getSimilarMovies(widget.movieId.toString());
   }
 
   Future<void> _toggleWatchlist(MovieDetails movie) async {
@@ -121,7 +125,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 ),
               ),
 
-               const SliverToBoxAdapter(child: SizedBox(height: 46))  ,
+              const SliverToBoxAdapter(child: SizedBox(height: 46))  ,
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 60),
@@ -145,7 +149,36 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 ),
               ),
 
+              const SliverToBoxAdapter(child: SizedBox(height: 46)),
+
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 60),
+                  child: FutureBuilder<List<Movie>>(
+                    future: _similarFuture,
+                    builder: (context, similarSnapshot) {
+                      if (similarSnapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(
+                          height: 250, 
+                          child: Center(child: CircularProgressIndicator(color: Color(0xFFA970FF))),
+                        );
+                      }
+                  
+                      final similarMovies = similarSnapshot.data ?? [];
+                  
+                      // shrink if nothing
+                      if (similarMovies.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                  
+                      return SimilarMoviesSection(movies: similarMovies);
+                    },
+                  ),
+                ),
+              ),
+
               const SliverToBoxAdapter(child: SizedBox(height: 60)),
+
             ],
           );
         },

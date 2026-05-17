@@ -16,26 +16,8 @@ class WhereToWatchSection extends StatelessWidget{
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Container(
-              width: 4,
-              height: 24,
-              color: const  Color(0xFFE53935),
-            ),
-
-            const SizedBox(width: 8),
-
-            const Text(
-              'Where to Watch',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold)
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
+        const _SectionHeading(label: 'Where to Watch'),
+        const SizedBox(height: 20),
 
         if (sources == null || sources!.isEmpty)
           const Text(
@@ -105,6 +87,32 @@ class WhereToWatchSection extends StatelessWidget{
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionHeading extends StatelessWidget {
+  final String label;
+  const _SectionHeading({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          left: BorderSide(color: Color(0xFFE53935), width: 3),
+        ),
+      ),
+      padding: const EdgeInsets.only(left: 12),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          letterSpacing: -0.3,
         ),
       ),
     );
