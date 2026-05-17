@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../services/local_db_service.dart';
 import '../../models/watchlist_item.dart';
+import '../../models/user_preferences.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_styles.dart';
+import '../widgets/universal_banner.dart';
 
 class WatchlistSection extends StatelessWidget {
   const WatchlistSection({super.key});
@@ -17,9 +20,7 @@ class WatchlistSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Your Watchlist', style: AppStyles.heading(size: 20)),
-            _PillButton(label: '+ Add', onTap: () {
-              // TODO: Route to search screen
-            }),
+            _PillButton(label: '+ Add', onTap: () => context.go('/search')),
           ],
         ),
         const SizedBox(height: 14),
@@ -93,51 +94,101 @@ class _EmptyWatchlistState extends StatelessWidget {
   }
 }
 
-class _WatchlistCard extends StatelessWidget {
+class _WatchlistCard extends StatefulWidget {
   final WatchlistItem movie;
   final double width;
   const _WatchlistCard({required this.movie, required this.width});
 
   @override
+  State<_WatchlistCard> createState() => _WatchlistCardState();
+}
+
+class _WatchlistCardState extends State<_WatchlistCard> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     String? imageUrl;
-    if (movie.posterPath.isNotEmpty) {
-      if (movie.posterPath.startsWith('http')) {
-        imageUrl = movie.posterPath;
+    if (widget.movie.posterPath.isNotEmpty) {
+      if (widget.movie.posterPath.startsWith('http')) {
+        imageUrl = widget.movie.posterPath;
       } else {
         const kTmdbImageBase = 'https://image.tmdb.org/t/p/';
         const kPosterSize = 'w342';
-        final safePath = movie.posterPath.startsWith('/') 
-            ? movie.posterPath 
-            : '/${movie.posterPath}';
+        final safePath = widget.movie.posterPath.startsWith('/')
+            ? widget.movie.posterPath
+            : '/${widget.movie.posterPath}';
         imageUrl = '$kTmdbImageBase$kPosterSize$safePath';
       }
     }
 
     String formattedRuntime = '0 min';
-    if (movie.runtimeMinutes > 0) {
-      final hours = movie.runtimeMinutes ~/ 60;
-      final minutes = movie.runtimeMinutes % 60;
+    if (widget.movie.runtimeMinutes > 0) {
+      final hours = widget.movie.runtimeMinutes ~/ 60;
+      final minutes = widget.movie.runtimeMinutes % 60;
       formattedRuntime = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
     }
 
     return SizedBox(
-      width: width,
+      width: widget.width,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(
-          height: width * 1.4,
-          decoration: BoxDecoration(
-            color: AppColors.plannerSurface,
-            borderRadius: BorderRadius.circular(10),
-            image: imageUrl != null 
-                ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover) 
-                : null,
+        MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          cursor: SystemMouseCursors.click,
+          child: Stack(
+            children: [
+              Container(
+                height: widget.width * 1.4,
+                decoration: BoxDecoration(
+                  color: AppColors.plannerSurface,
+                  borderRadius: BorderRadius.circular(10),
+                  image: imageUrl != null
+                      ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
+                      : null,
+                ),
+                child: imageUrl == null
+                    ? const Center(child: Icon(Icons.movie, color: AppColors.textMuted))
+                    : null,
+              ),
+              if (_isHovered)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () async {
+                      await LocalDbService().toggleWatchlist(widget.movie);
+                      if (context.mounted) {
+                        final prefsBox = Hive.box<UserPreferences>('user_preferences');
+                        final prefs = prefsBox.get('current_prefs');
+                        if (prefs != null && prefs.notificationsEnabled) {
+                          UniversalBanner.show(
+                            context: context,
+                            title: 'Removed from Watchlist',
+                            subTitle: '${widget.movie.title} removed from your list.',
+                            imageUrl: widget.movie.posterPath,
+                          );
+                        }
+                      }
+                    },
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
+                      ),
+                      child: const Icon(Icons.close_rounded, color: Colors.white, size: 16),
+                    ),
+                  ),
+                ),
+            ],
           ),
-          child: imageUrl == null ? const Center(child: Icon(Icons.movie, color: AppColors.textMuted)) : null,
         ),
         const SizedBox(height: 7),
         Text(
-          movie.title,
+          widget.movie.title,
           style: AppStyles.body(size: 12, color: AppColors.white),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

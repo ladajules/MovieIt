@@ -462,7 +462,10 @@ class _SearchScreenState extends State<SearchScreen> {
                 const SizedBox(height: 16),
                 MovieItSearchBar(onChanged: _onSearch),
                 const SizedBox(height: 16),
-                _buildFilterOptions(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _buildFilterOptions(),
+                ),
                 const SizedBox(height: 16),
                 Consumer<MovieProvider>(
                   builder: (context, movieProvider, child) {

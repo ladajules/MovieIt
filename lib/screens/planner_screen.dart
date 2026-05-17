@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:movieit/models/user_preferences.dart';
+import 'package:movieit/models/watchlist_item.dart';
 import 'package:movieit/widgets/import_export_modal.dart';
+import 'package:movieit/widgets/schedule_movie_modal.dart';
+import 'package:movieit/widgets/universal_banner.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_styles.dart';
 
@@ -196,7 +201,26 @@ class ScheduleFab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        final movies = Hive.box<WatchlistItem>('watchlist').values.toList();
+        if (movies.isEmpty) {
+          final prefs = Hive.box<UserPreferences>('user_preferences').get('current_prefs');
+          if (prefs != null && prefs.notificationsEnabled) {
+            UniversalBanner.show(
+              context: context,
+              title: 'Watchlist is Empty',
+              subTitle: 'Add movies to your watchlist before scheduling a movie night.',
+              fallbackIcon: Icons.movie_creation_outlined,
+            );
+          }
+          return;
+        }
+        showDialog(
+          context: context,
+          barrierColor: Colors.black.withValues(alpha: 0.7),
+          builder: (_) => ScheduleFromWatchlistModal(movies: movies),
+        );
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
         decoration: BoxDecoration(
