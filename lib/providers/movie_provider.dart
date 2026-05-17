@@ -42,24 +42,25 @@ class MovieProvider extends ChangeNotifier{
 
 
   Future<void> loadFilteredMovies({
-    int? genreId,
-    required double minRating,
-    required double maxRuntime,
-    required String language,
+    List<int>? genres,
+    bool matchAll = false,
+    double? minRuntime,
+    double? maxRuntime,
+    double? minRating,
+    List<String>? languages,
   }) async {
     _setLoading(true);
-    _searchMovies.clear(); // Clear previous results to show fresh filtered ones
-
+    _searchMovies.clear();
 
     try {
-      // Note: We call a new method in apiClient (which we'll define below)
       final results = await apiClient.getFilteredMovies(
-        genreId: genreId?.toString(),
-        minRating: minRating,
+        genres: genres,
+        matchAll: matchAll,
+        minRuntime: minRuntime,
         maxRuntime: maxRuntime,
-        language: language,
+        minRating: minRating,
+        languages: languages,
       );
-
 
       _searchMovies = results;
       _errorMessage = '';

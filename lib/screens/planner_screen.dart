@@ -82,7 +82,9 @@ class _TopBar extends StatelessWidget {
           // ======================================================================
 
           const Spacer(),
-          GestureDetector(
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
             onTap: () {
               showDialog(
                 context: context,
@@ -100,6 +102,7 @@ class _TopBar extends StatelessWidget {
               ),
               child: const Icon(Icons.import_export_rounded, color: AppColors.textSecondary, size: 18),
             ),
+          ),
           ),
         ],
       ),
@@ -200,7 +203,9 @@ class ScheduleFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
       onTap: () {
         final movies = Hive.box<WatchlistItem>('watchlist').values.toList();
         if (movies.isEmpty) {
@@ -240,6 +245,7 @@ class ScheduleFab extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

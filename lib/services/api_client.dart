@@ -161,25 +161,41 @@ class ApiClient {
     }
    
     Future<List<Movie>> getFilteredMovies({
-      String? genreId,
-      double? minRating,
+      List<int>? genres,
+      bool matchAll = false,
+      double? minRuntime,
       double? maxRuntime,
-      String? language,
+      double? minRating,
+      List<String>? languages,
     }) async {
       try {
         final Map<String, String> queryParameters = {};
       
-        if (genreId != null) queryParameters['genreId'] = genreId;
-        if (minRating != null) queryParameters['minRating'] = minRating.toString();
-        if (maxRuntime != null) queryParameters['maxRuntime'] = maxRuntime.toString();
-        if(language != null) queryParameters['language'] = language;
+        if (genres != null && genres.isNotEmpty) {
+          queryParameters['genres'] = genres.join(',');
+        }
 
+        queryParameters['matchAll'] = matchAll.toString();
+
+        if (minRuntime != null) {
+          queryParameters['minRuntime'] = minRuntime.toInt().toString();
+        }
+        
+        if (maxRuntime != null) {
+          queryParameters['maxRuntime'] = maxRuntime.toInt().toString();
+        }
+
+        if (minRating != null) {
+          queryParameters['minRating'] = minRating.toString();
+        }
+
+        if (languages != null && languages.isNotEmpty) {
+          queryParameters['languages'] = languages.join(',');
+        }
 
         final uri = Uri.parse('$_baseUrl/filter').replace(queryParameters: queryParameters);
 
-
         final response = await http.get(uri);
-
 
         if (response.statusCode == 200) {
           List<dynamic> data = jsonDecode(response.body);
