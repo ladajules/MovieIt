@@ -359,7 +359,7 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                                 Navigator.of(context).pop();
 
                                 final prefsBox = Hive.box<UserPreferences>('user_preferences');
-                                final prefs = prefsBox.get('current_prefs');
+                                final prefs = prefsBox.get('current_prefs') ?? UserPreferences();
 
                                 if (prefs != null && prefs.notificationsEnabled) {
                                   UniversalBanner.show(     
