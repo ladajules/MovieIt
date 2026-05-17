@@ -9,6 +9,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_styles.dart';
 
 import '../widgets/calendar_card.dart';
+import '../widgets/layout/custom_footer.dart';
 import '../widgets/monthly_goal_card.dart';
 import '../widgets/pending_review_card.dart';
 import '../widgets/platforms_card.dart';
@@ -116,48 +117,55 @@ class _DesktopLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(40, 0, 40, 100),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
         children: [
-          const Expanded(
-            flex: 2,
-            child: Column(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(40, 0, 40, 60),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                StreakCard(),
-                SizedBox(height: 12),
-                MonthlyGoalCard(),
-                SizedBox(height: 12),
-                CalendarCard(),
+                const Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      StreakCard(),
+                      SizedBox(height: 12),
+                      MonthlyGoalCard(),
+                      SizedBox(height: 12),
+                      CalendarCard(),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  flex: 5,
+                  child: Column(
+                    children: [
+                      StatsCard(),
+                      SizedBox(height: 16),
+                      PendingReviewCard(),
+                      SizedBox(height: 16),
+                      WatchlistSection(),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      RouletteCard(),
+                      SizedBox(height: 12),
+                      PlatformsCard(),
+                      SizedBox(height: 12),
+                      RecentActivityCard(),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-          const SizedBox(width: 16),
-          const Expanded(
-            flex: 5,
-            child: Column(
-              children: [
-                StatsCard(),
-                SizedBox(height: 16),
-                PendingReviewCard(),
-                SizedBox(height: 16),
-                WatchlistSection(),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Expanded(
-            flex: 2,
-            child: Column(
-              children: [
-                RouletteCard(),
-                SizedBox(height: 12),
-                PlatformsCard(),
-                SizedBox(height: 12),
-                RecentActivityCard(),
-              ],
-            ),
-          ),
+          const CustomFooter(),
         ],
       ),
     );
@@ -170,28 +178,35 @@ class _MobileLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(40, 0, 40, 100),
       child: Column(
-        children: const [
-          Row(children: [
-            Expanded(child: StreakCard()),
-            SizedBox(width: 12),
-            Expanded(child: MonthlyGoalCard()),
-          ]),
-          SizedBox(height: 12),
-          StatsCard(),
-          SizedBox(height: 12),
-          CalendarCard(),
-          SizedBox(height: 12),
-          PendingReviewCard(),
-          SizedBox(height: 12),
-          RouletteCard(),
-          SizedBox(height: 12),
-          WatchlistSection(),
-          SizedBox(height: 12),
-          PlatformsCard(),
-          SizedBox(height: 12),
-          RecentActivityCard(),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(40, 0, 40, 60),
+            child: Column(
+              children: const [
+                Row(children: [
+                  Expanded(child: StreakCard()),
+                  SizedBox(width: 12),
+                  Expanded(child: MonthlyGoalCard()),
+                ]),
+                SizedBox(height: 12),
+                StatsCard(),
+                SizedBox(height: 12),
+                CalendarCard(),
+                SizedBox(height: 12),
+                PendingReviewCard(),
+                SizedBox(height: 12),
+                RouletteCard(),
+                SizedBox(height: 12),
+                WatchlistSection(),
+                SizedBox(height: 12),
+                PlatformsCard(),
+                SizedBox(height: 12),
+                RecentActivityCard(),
+              ],
+            ),
+          ),
+          const CustomFooter(),
         ],
       ),
     );
@@ -249,4 +264,3 @@ class ScheduleFab extends StatelessWidget {
     );
   }
 }
-

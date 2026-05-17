@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movieit/utils/notification_engine.dart';
+import 'package:movieit/widgets/layout/custom_footer.dart';
 import 'package:movieit/widgets/layout/custom_navbar.dart';
 import 'package:go_router/go_router.dart';
 
@@ -41,6 +42,7 @@ class _MainAppShellState extends State<MainAppShell> {
         },
       ),
       body: widget.child,
+
     );
   }
 }

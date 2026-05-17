@@ -49,7 +49,7 @@ class NotificationWidget extends StatelessWidget{
                   const SizedBox(width: 12),
                   Text(
                     "Notifications",
-                    style: GoogleFonts.bagelFatOne(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 20,
                     ),
