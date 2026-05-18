@@ -171,7 +171,8 @@ class _WatchlistCardState extends State<_WatchlistCard> {
                       await LocalDbService().toggleWatchlist(removedMovie);
                       if (widget.bannerContext.mounted) {
                         final prefsBox = Hive.box<UserPreferences>('user_preferences');
-                        final prefs = prefsBox.get('current_prefs');
+                        final prefs = prefsBox.get('current_prefs') ?? UserPreferences();
+
                         if (prefs != null && prefs.notificationsEnabled) {
                           UniversalBanner.show(
                             context: widget.bannerContext,
