@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:movieit/models/movie_models.dart';
-import 'movie_card_horizontal.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import 'landscape_movie_card.dart';
 
-class HorizontalMovieList extends StatefulWidget {
+class SimilarMoviesSection extends StatefulWidget {
   final List<Movie> movies;
-  final String sectionTitle;
   
-  const HorizontalMovieList({super.key, required this.movies, required this.sectionTitle});
+  const SimilarMoviesSection({super.key, required this.movies});
 
   @override
-  State<HorizontalMovieList> createState() => _HorizontalMovieListState();
+  State<SimilarMoviesSection> createState() => _SimilarMoviesSectionState();
 }
 
-class _HorizontalMovieListState extends State<HorizontalMovieList> {
+class _SimilarMoviesSectionState extends State<SimilarMoviesSection> {
   final ScrollController _scrollController = ScrollController();
 
   bool _showLeftArrow = false;
@@ -65,18 +65,16 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
-      child:  Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.sectionTitle,
-            style: GoogleFonts.poppins(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold, height: 1.1),
-          ),
-          const SizedBox(height: 5),
-          SizedBox(
-            height: 380, 
+    if (widget.movies.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionHeading(label: 'More Like This'),
+        const SizedBox(height: 20),
+        
+        SizedBox(
+            height: 260, 
             child: Stack(
               alignment: Alignment.center,
               clipBehavior: Clip.none,
@@ -85,12 +83,10 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
                   clipBehavior: Clip.none,
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.only(top: 15, bottom: 25),
-                  itemCount: 10,
+                  padding: const EdgeInsets.only(bottom: 25),
+                  itemCount: widget.movies.length, 
                   itemBuilder: (context, index) {
-                    return MovieCard(
-                    item: widget.movies[index], 
-                    );
+                    return LandscapeMovieCard(item: widget.movies[index]);
                   },
                 ),
             
@@ -98,7 +94,7 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
                   left: -20,
                   child: _buildNavArrow(
                     icon: Icons.arrow_back_ios_new_rounded,
-                    onTap: () => _scrollBy(-700),
+                    onTap: () => _scrollBy(-800), 
                   ),
                 ),
 
@@ -106,14 +102,13 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
                   right: -20,
                   child: _buildNavArrow(
                     icon: Icons.arrow_forward_ios_rounded,
-                    onTap: () => _scrollBy(700),
+                    onTap: () => _scrollBy(800),
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -142,5 +137,31 @@ class _HorizontalMovieListState extends State<HorizontalMovieList> {
       ),
     );
   }
+
 }
 
+class _SectionHeading extends StatelessWidget {
+  final String label;
+  const _SectionHeading({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          left: BorderSide(color: Color(0xFFE53935), width: 3),
+        ),
+      ),
+      padding: const EdgeInsets.only(left: 12),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          letterSpacing: -0.3,
+        ),
+      ),
+    );
+  }
+}

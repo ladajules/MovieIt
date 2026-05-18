@@ -1,13 +1,35 @@
 import 'package:flutter/material.dart';
+
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:movieit/models/scheduled_event.dart';
+import 'package:movieit/models/user_preferences.dart';
+import 'package:movieit/models/user_stats.dart';
+import 'package:movieit/models/watchlist_item.dart';
+
 import 'package:movieit/providers/movie_provider.dart';
+import 'package:movieit/theme/movieit_theme.dart';
 import 'package:movieit/screens/home_screen.dart';
 import 'package:movieit/screens/search_screen.dart';
+import 'package:movieit/screens/planner_screen.dart';
 import 'package:movieit/screens/movie_detail_screen.dart';
 import 'package:go_router/go_router.dart';
-import 'package:movieit/widgets/layout/custom_navbar.dart';
+import 'package:movieit/utils/main_app_shell.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(ScheduledEventAdapter());
+  Hive.registerAdapter(UserPreferencesAdapter());
+  Hive.registerAdapter(UserStatsAdapter());
+  Hive.registerAdapter(WatchlistItemAdapter());
+
+  await Hive.openBox<ScheduledEvent>('scheduled_event');
+  await Hive.openBox<UserPreferences>('user_preferences');
+  await Hive.openBox<UserStats>('user_stats');
+  await Hive.openBox<WatchlistItem>('watchlist');
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => MovieProvider(),
@@ -23,20 +45,11 @@ final GoRouter _router = GoRouter(
       builder: (context, state, child) {
         String activeCategory = 'Home';
         if (state.fullPath == '/search') activeCategory = 'Search';
-        if (state.fullPath == '/watchlist') activeCategory = 'Watchlist';
+        if (state.fullPath == '/planner') activeCategory = 'Planner';
 
-        return Scaffold(
-          backgroundColor: Colors.black,
-          extendBodyBehindAppBar: true,
-          appBar: CustomNavBar(
-            activeCategory: activeCategory,
-            onTap: (category) {
-               if (category == 'Home') context.go('/');
-               if (category == 'Search') context.go('/search');
-               if (category == 'Watchlist') context.go('/watchlist');
-            },
-          ),
-          body: child,
+        return MainAppShell(
+          child: child,
+          activeCategory: activeCategory
         );
       },
       routes: [
@@ -49,10 +62,8 @@ final GoRouter _router = GoRouter(
           builder: (context, state) => const SearchScreen(),
         ),
         GoRoute(
-          path: '/watchlist',
-          builder: (context, state) => const Center(
-            child: Text("Watchlist coming soon...", style: TextStyle(color: Colors.white))
-          ),
+          path: '/planner',
+          builder: (context, state) => const PlannerScreen(),
         ),
       ],
     ),
@@ -76,6 +87,7 @@ class MyApp extends StatelessWidget {
       routerConfig: _router,
       title: 'MovieIT',
       debugShowCheckedModeBanner: false,
+      theme: MovieItTheme.dark(),
     );
   }
 }

@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
+import 'package:movieit/models/sources_model.dart';
+import 'package:movieit/models/user_preferences.dart';
+import 'package:movieit/widgets/similar_movies_section.dart';
+import 'package:movieit/widgets/universal_banner.dart';
+import 'package:movieit/widgets/where_to_watch_section.dart';
 import '../models/movie_details_model.dart';
 import '../widgets/movie_detail_hero_section.dart';
 import '../widgets/cast_grid.dart';
 import '../services/api_client.dart';
+import '../models/movie_models.dart';
+
+import '../services/local_db_service.dart';
+import '../models/watchlist_item.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   final String movieId;
@@ -16,16 +26,58 @@ class MovieDetailScreen extends StatefulWidget {
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
   late Future<MovieDetails> _movieFuture;
+  late Future<List<Sources>> _sourcesFuture;
+  late Future<List<Movie>> _similarFuture;
+
+  final _dbService = LocalDbService();
   bool _isInWatchlist = false;
 
   @override
   void initState() {
     super.initState();
-    _movieFuture = ApiClient().getMovieDetails(widget.movieId.toString());
+    _fetchData();
+
+    final id = int.tryParse(widget.movieId) ?? 0;
+    _isInWatchlist = _dbService.isInWatchlist(id);
   }
 
-  void _toggleWatchlist(MovieDetails movie) {
-    setState(() => _isInWatchlist = !_isInWatchlist);
+  void _fetchData() {
+    _movieFuture = ApiClient().getMovieDetails(widget.movieId.toString());
+    _sourcesFuture = ApiClient().getSources(widget.movieId.toString());
+    _similarFuture = ApiClient().getSimilarMovies(widget.movieId.toString());
+  }
+
+  Future<void> _toggleWatchlist(MovieDetails movie) async {
+    final item = WatchlistItem(
+      tmdbId: movie.id,
+      title: movie.title,
+      posterPath: movie.posterUrl ?? '', 
+      runtimeMinutes: movie.runtime,
+      genreIds: movie.genres.map((g) => g.hashCode).toList(), 
+      cachedAt: DateTime.now().toUtc(),
+    );
+
+    await _dbService.toggleWatchlist(item);
+
+    setState(() {
+      _isInWatchlist = _dbService.isInWatchlist(movie.id);
+    });
+
+    final prefsBox = Hive.box<UserPreferences>('user_preferences');
+    final prefs = prefsBox.get('current_prefs') ?? UserPreferences();
+
+
+    if (prefs != null && prefs.notificationsEnabled){
+    UniversalBanner.show(
+          context: context,
+          title: _isInWatchlist ? "Added to Watchlist" : "Removed from Watchlist",
+          subTitle: _isInWatchlist 
+              ? "${item.title} is waiting for you." 
+              : "${item.title} removed from your list.",
+          imageUrl: item.posterPath,
+        );
+    }
+   
   }
 
   @override
@@ -44,6 +96,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               message: snapshot.error?.toString() ?? 'Something went wrong.',
               onRetry: () => setState(() {
                 _movieFuture = ApiClient().getMovieDetails(widget.movieId.toString());
+                _sourcesFuture = ApiClient().getSources(widget.movieId.toString());
               }),
             );
           }
@@ -62,7 +115,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     ),
                     SafeArea(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 8),
+                        padding: const EdgeInsets.only(left: 46, top: 8),
                         child: IconButton(
                           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
                           onPressed: () => context.canPop() ? context.pop() : context.go('/'),
@@ -73,7 +126,23 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 ),
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 48)),
+              const SliverToBoxAdapter(child: SizedBox(height: 46))  ,
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 60),
+                  child: FutureBuilder<List<Sources>>(
+                    future: _sourcesFuture,
+                    builder: (context, sourcesSnapshot) {
+                      if (sourcesSnapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator(color: Color(0xFFA970FF)));
+                      }
+                      return WhereToWatchSection(sources: sourcesSnapshot.data);
+                    },
+                  ),
+                ),
+              ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 46)),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 60),
@@ -81,7 +150,36 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 ),
               ),
 
+              const SliverToBoxAdapter(child: SizedBox(height: 46)),
+
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 60),
+                  child: FutureBuilder<List<Movie>>(
+                    future: _similarFuture,
+                    builder: (context, similarSnapshot) {
+                      if (similarSnapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(
+                          height: 250, 
+                          child: Center(child: CircularProgressIndicator(color: Color(0xFFA970FF))),
+                        );
+                      }
+                  
+                      final similarMovies = similarSnapshot.data ?? [];
+                  
+                      // shrink if nothing
+                      if (similarMovies.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                  
+                      return SimilarMoviesSection(movies: similarMovies);
+                    },
+                  ),
+                ),
+              ),
+
               const SliverToBoxAdapter(child: SizedBox(height: 60)),
+
             ],
           );
         },

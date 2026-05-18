@@ -3,6 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:movieit/models/movie_models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:movieit/models/user_preferences.dart';
+import 'package:movieit/widgets/hover_action_btn.dart';
+import 'package:movieit/widgets/universal_banner.dart';
+import 'dart:async';
+
+import '../services/local_db_service.dart';
+import '../models/watchlist_item.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HeroSlider extends StatefulWidget {
   final List<Movie> movies;
@@ -16,55 +24,90 @@ class HeroSlider extends StatefulWidget {
 class _HeroSliderState extends State<HeroSlider> {
   late PageController _heroPageController;
   int _currentHeroPage = 0;
+  Timer? _autoScrollTimer;
   Logger log = Logger();
+  final LocalDbService _dbService = LocalDbService();
 
   @override
   void initState() {
     super.initState();
     _heroPageController = PageController(viewportFraction: 0.7, initialPage: 0);
+    _startAutoScroll();
   }
 
   @override
   void dispose() {
+    _autoScrollTimer?.cancel();
     _heroPageController.dispose();
     super.dispose();
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer?.cancel();
+    if (widget.movies.isEmpty) return;
+
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (_heroPageController.hasClients) {
+        int nextPage = (_currentHeroPage + 1) % widget.movies.length;
+        _heroPageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 600),  
+          curve: Curves.easeInOutQuart,
+        );
+      }
+    });
+  }
+
+  void _pauseAutoScroll() {
+    _autoScrollTimer?.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(
-          height: 500,
-          child: PageView.builder(
-            controller: _heroPageController,
-            itemCount: widget.movies.length,
-            onPageChanged: (int page) => setState(() => _currentHeroPage = page),
-            physics: const BouncingScrollPhysics(),
-            itemBuilder: (context, index) {
-              return AnimatedBuilder(
-                animation: _heroPageController,
-                builder: (context, child) {
-                  double value = 1.0;
-                  if (_heroPageController.position.haveDimensions) {
-                    value = _heroPageController.page! - index;
-                    value = (1 - (value.abs() * 0.2)).clamp(0.8, 1.0);
-                  } else {
-                    value = index == 0 ? 1.0 : 0.8;
-                  }
-                  return Center(
-                    child: Transform.scale(
-                      scale: value,
-                      child: Opacity(
-                        opacity: value.clamp(0.5, 1.0),
-                        child: child,
-                      ),
-                    ),
+        MouseRegion(
+          onEnter: (_) => _pauseAutoScroll(),
+          onExit: (_) => _startAutoScroll(),
+          child: Listener(
+            onPointerDown: (_) => _pauseAutoScroll(),
+            onPointerUp: (_) => _startAutoScroll(),
+            child: SizedBox(
+              height: 580,
+              child: PageView.builder(
+                controller: _heroPageController,
+                itemCount: widget.movies.length,
+                onPageChanged: (int page) {
+                  setState(() => _currentHeroPage = page);
+                  _startAutoScroll();
+                },
+                physics: const BouncingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  return AnimatedBuilder(
+                    animation: _heroPageController,
+                    builder: (context, child) {
+                      double value = 1.0;
+                      if (_heroPageController.position.haveDimensions) {
+                        value = _heroPageController.page! - index;
+                        value = (1 - (value.abs() * 0.2)).clamp(0.8, 1.0);
+                      } else {
+                        value = index == 0 ? 1.0 : 0.8;
+                      }
+                      return Center(
+                        child: Transform.scale(
+                          scale: value,
+                          child: Opacity(
+                            opacity: value.clamp(0.5, 1.0),
+                            child: child,
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildHeroCard(widget.movies[index]),
                   );
                 },
-                child: _buildHeroCard(widget.movies[index]),
-              );
-            },
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 30),
@@ -109,6 +152,8 @@ class _HeroSliderState extends State<HeroSlider> {
                   const SizedBox(height: 15),
                   Row(
                     children: [
+                      const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                      const SizedBox(width: 4),
                       Text(item.rating ?? 'N/A', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 18)),
                       const SizedBox(width: 15),
                       Text(item.year ?? 'N/A', style: const TextStyle(color: Colors.white70)),
@@ -127,19 +172,55 @@ class _HeroSliderState extends State<HeroSlider> {
                   const SizedBox(height: 35),
                   Row(
                     children: [
-                         _buildActionBtn('More Info', Icons.info_outline, Colors.white12, () {
-                          log.d("hero slider ${item.id} tapped");
-                          context.push('/movie/${item.id}');
-                        }),
+                      HoverActionBtn(label: 'More Info', icon: Icons.info_outline_rounded, baseColor: Colors.white12, onTap: () {
+                        log.d("hero slider ${item.id} tapped");
+                        context.push('/movie/${item.id}');
+                      }),
+
                       const SizedBox(width: 15),
 
-                      GestureDetector(
-                        onTap: () {
-                          /// TODO: add movie to watshlisht
+                      ValueListenableBuilder<Box<WatchlistItem>>(
+                        valueListenable: _dbService.listenToWatchlist(),
+                        builder: (context, box, child) {
+                          final isInWatchlist = box.containsKey(item.id);
+                          
+                          return HoverActionBtn(
+                            label: isInWatchlist ? 'Saved' : 'Save',
+                            icon: isInWatchlist ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                            baseColor: isInWatchlist ? const Color(0xFFA970FF) : const Color(0xFF2D2D3A),
+                            onTap: () async {
+                              String path = item.posterUrl ?? '';
+                              if (path.startsWith('http')) {
+                                path = '/${Uri.parse(path).pathSegments.last}';
+                              }
+
+                              final watchlistItem = WatchlistItem(
+                                tmdbId: item.id,
+                                title: item.title,
+                                posterPath: path,
+                                runtimeMinutes: item.runtime ?? 0,
+                                genreIds: item.genreIds ?? [],    
+                                cachedAt: DateTime.now().toUtc(),
+                              );
+                              
+                              await _dbService.toggleWatchlist(watchlistItem);
+
+                              final prefsBox = Hive.box<UserPreferences>('user_preferences');
+                              final prefs = prefsBox.get('current_prefs') ?? UserPreferences();
+
+                              if (prefs != null && prefs.notificationsEnabled) {
+                                    UniversalBanner.show(
+                                      context: context,
+                                      title: isInWatchlist ? "Removed from Watchlist" : "Added to Watchlist",
+                                      subTitle: isInWatchlist 
+                                          ? "${item.title} removed from your list." 
+                                          : "${item.title} is waiting for you.",
+                                      imageUrl: item.posterUrl,
+                                    );
+                              }
+                            },
+                          );
                         },
-                        child: _buildActionBtn('Save', Icons.bookmark_border, const Color(0xFF2D2D3A), (){
-                          log.d("praktis");
-                        }),
                       ),
                     ],
                   )
@@ -188,17 +269,22 @@ class _HeroSliderState extends State<HeroSlider> {
       child: Text(text, style: const TextStyle(fontSize: 12)),
     );
   }
+}
 
-  Widget _buildActionBtn(String label, IconData icon, Color color, VoidCallback onTap) {
-    return ElevatedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 20, color: Colors.white),
-      label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+class _CertChip extends StatelessWidget {
+  final String label;
+  const _CertChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(4),
       ),
+      child: Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
     );
   }
 }
+

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:movieit/providers/movie_provider.dart';
+import 'package:movieit/widgets/layout/custom_footer.dart';
 import 'package:provider/provider.dart';
 import '../widgets/hero_slider.dart';
 import '../widgets/horizontal_movie_list.dart';
@@ -21,6 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
       Provider.of<MovieProvider>(context, listen: false).loadTrendingAndDiscoverAndTop4();
     });
   }
+
+  
   
  
   @override
@@ -44,25 +46,36 @@ class _HomeScreenState extends State<HomeScreen> {
               return SingleChildScrollView(
                       child: Column(
                         children: [
-                          const SizedBox(height: 180),
+                          const SizedBox(height: 140),
                           
                           //  hero Slider
                           HeroSlider(movies: movieProvider.top4MoviesList),
                           
                           const SizedBox(height: 60),
                           
-                          //  horizontal List
+                          /// HORIZONTAL MOVIE LISTTT
+                          //  Trending NOW (GLOBAL)
                           HorizontalMovieList(movies: movieProvider.trendingMoviesList, sectionTitle: "Trending Now",),
+                          const SizedBox(height: 15),
+
+                          // Popular in PH
+                          HorizontalMovieList(movies: movieProvider.popularPHMoviesList, sectionTitle: "Popular in Philippines",),
+                          const SizedBox(height: 15),
+
+                          // Upcoming MOvies
+                          HorizontalMovieList(movies: movieProvider.upcomingMoviesList, sectionTitle: "Upcoming Movies",),
                           
                           const SizedBox(height: 60),
+
+                          CustomFooter(),
                         ],
                       ),
                     );
             }
           )
-          
         ],
       ),
+
     );
   }
 

@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
+  import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/movie_details_model.dart';
+import '../../widgets/schedule_movie_modal.dart';
+
+import '../theme/app_colors.dart';
 
 class MovieHeroSection extends StatelessWidget {
   final MovieDetails movie;
@@ -17,15 +20,13 @@ class MovieHeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
     final isWide = screenWidth > 900;
 
     return SizedBox(
-      height: isWide ? 520 : null,
+      height: isWide ? 720 : null,
       child: Stack(
         children: [
           _BackdropImage(url: movie.backdropUrl),
-
           const _GradientOverlay(),
 
           Positioned.fill(
@@ -45,7 +46,6 @@ class MovieHeroSection extends StatelessWidget {
   }
 }
 
-
 class _BackdropImage extends StatelessWidget {
   final String? url;
   const _BackdropImage({this.url});
@@ -53,12 +53,13 @@ class _BackdropImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (url == null) {
-      return Container(color: const Color(0xFF1A1A1A));
+      return Positioned.fill(child: Container(color: AppColors.charcoal));
     }
     return Positioned.fill(
       child: Image.network(
         url!,
         fit: BoxFit.cover,
+        alignment: Alignment.center,
         frameBuilder: (context, child, frame, _) =>
             frame == null ? Container(color: const Color(0xFF1A1A1A)) : child,
         errorBuilder: (_, __, ___) => Container(color: const Color(0xFF1A1A1A)),
@@ -99,7 +100,7 @@ class _WideLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.end, 
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -170,9 +171,23 @@ class _InfoColumn extends StatelessWidget {
         ),
         const SizedBox(height: 20),
 
-        _WatchlistButton(
-          isInWatchlist: isInWatchlist,
-          onTap: onAddToWatchlist,
+        Row(
+          children: [
+            _ScheduleButton(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  barrierColor: Colors.black.withOpacity(0.7),
+                  builder: (context) => ScheduleMovieModal(movie: movie),
+                );
+              },
+            ),
+            const SizedBox(width: 12),
+            _WatchlistIconButton(
+              isInWatchlist: isInWatchlist,
+              onTap: onAddToWatchlist,
+            ),
+          ],
         ),
         const SizedBox(height: 24),
 
@@ -215,38 +230,59 @@ class _InfoColumn extends StatelessWidget {
   }
 }
 
-class _WatchlistButton extends StatelessWidget {
-  final bool isInWatchlist;
+class _ScheduleButton extends StatefulWidget {
   final VoidCallback? onTap;
-  const _WatchlistButton({required this.isInWatchlist, this.onTap});
+
+  const _ScheduleButton({this.onTap});
+
+  @override
+  State<_ScheduleButton> createState() => _ScheduleButtonState();
+}
+
+class _ScheduleButtonState extends State<_ScheduleButton> {
+  bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTap: onTap,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedScale(
+          scale: _isHovered ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
-              color: isInWatchlist ? const Color(0xFFA970FF) : Colors.white,
+              color: const Color(0xFFA970FF),
               borderRadius: BorderRadius.circular(30),
+              boxShadow: _isHovered
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFA970FF).withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      )
+                    ]
+                  : [],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: [
+              children: const [
                 Icon(
-                  isInWatchlist ? Icons.bookmark : Icons.bookmark_add_outlined,
-                  color: isInWatchlist ? Colors.white : Colors.black,
+                  Icons.calendar_month_rounded,
+                  color: Colors.white,
                   size: 18,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Text(
-                  isInWatchlist ? 'In Watchlist' : 'Add to Watchlist',
+                  'Schedule for Later',
                   style: TextStyle(
-                    color: isInWatchlist ? Colors.white : Colors.black,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -255,7 +291,64 @@ class _WatchlistButton extends StatelessWidget {
             ),
           ),
         ),
-      ],
+      ),
+    );
+  }
+}
+
+class _WatchlistIconButton extends StatefulWidget {
+  final bool isInWatchlist;
+  final VoidCallback? onTap;
+
+  const _WatchlistIconButton({required this.isInWatchlist, this.onTap});
+
+  @override
+  State<_WatchlistIconButton> createState() => _WatchlistIconButtonState();
+}
+
+class _WatchlistIconButtonState extends State<_WatchlistIconButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedScale(
+          scale: _isHovered ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: widget.isInWatchlist 
+                  ? const Color(0xFFA970FF) 
+                  : (_isHovered ? Colors.grey[200] : Colors.white),
+              shape: BoxShape.circle,
+              boxShadow: _isHovered
+                  ? [
+                      BoxShadow(
+                        color: widget.isInWatchlist
+                            ? const Color(0xFFA970FF).withOpacity(0.4)
+                            : Colors.black.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      )
+                    ]
+                  : [],
+            ),
+            child: Icon(
+              widget.isInWatchlist ? Icons.bookmark : Icons.bookmark_add_outlined,
+              color: widget.isInWatchlist ? Colors.white : Colors.black,
+              size: 18,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -282,7 +375,7 @@ class _StatsRow extends StatelessWidget {
   }
 
   Widget _statText(String t) => Text(
-        t ?? 'N/A', 
+        t,
         style: const TextStyle(color: Colors.white),
       );
 
@@ -325,7 +418,7 @@ class _MetadataPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _MetaRow(label: 'Runtime', value: '${movie.formattedRuntime}'),
+          _MetaRow(label: 'Runtime', value: movie.formattedRuntime),
           _MetaRow(label: 'Language', value: movie.language),
           if (movie.releaseDate != null)
             _MetaRow(label: 'Release Date', value: movie.releaseDate!),

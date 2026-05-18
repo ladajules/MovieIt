@@ -1,0 +1,987 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
+import 'dart:async';
+import 'package:intl/intl.dart';
+import 'package:movieit/models/scheduled_event.dart';
+import 'package:movieit/models/user_preferences.dart';
+import 'package:movieit/models/watchlist_item.dart';
+import 'package:movieit/services/local_db_service.dart';
+import 'package:movieit/utils/tmdb_image_helper.dart';
+import 'package:movieit/widgets/universal_banner.dart';
+import '../services/api_client.dart';
+import '../models/movie_details_model.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_styles.dart';
+
+class ScheduleMovieModal extends StatefulWidget {
+  final MovieDetails movie;
+
+  const ScheduleMovieModal({super.key, required this.movie});
+
+  @override
+  State<ScheduleMovieModal> createState() => _ScheduleMovieModalState();
+}
+
+class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+  String? _selectedPlatform;
+  List<String> _platforms = []; 
+  bool _isLoadingPlatforms = true;
+
+  final TextEditingController _reminderController = TextEditingController(text: '10');
+  String _reminderUnit = 'Minutes';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPlatforms();
+  }
+
+  Future<void> _fetchPlatforms() async {
+    try {
+      final sources = await ApiClient().getSources(widget.movie.id.toString());
+      
+      setState(() {
+        _platforms = sources.map((s) => s.name).toSet().cast<String>().toList();
+        
+        _platforms.add('Local File');
+        _platforms.add('Pirated HEHE');
+        _platforms.add('In Theater');
+        _isLoadingPlatforms = false;
+      });
+    } catch (e) {
+      setState(() {
+        _platforms = ['Local File'];
+        _platforms.add('Pirated HEHE');
+        _platforms.add('In Theater');
+        _isLoadingPlatforms = false;
+      });
+    }
+  }
+
+  Future<void> _pickDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(primary: AppColors.softPeriwinkle),
+        ),
+        child: child!,
+      ),
+    );
+    if (date != null) setState(() => _selectedDate = date);
+  }
+
+  Future<void> _pickTime() async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 20, minute: 0),
+      builder: (context, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(primary: AppColors.softPeriwinkle),
+        ),
+        child: child!,
+      ),
+    );
+    if (time != null) setState(() => _selectedTime = time);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final isTonight = _selectedDate?.day == now.day;
+    final isTomorrow = _selectedDate?.day == now.add(const Duration(days: 1)).day;
+    final is8PM = _selectedTime?.hour == 20 && _selectedTime?.minute == 0;
+    final is10PM = _selectedTime?.hour == 22 && _selectedTime?.minute == 0;
+    final posterImageUrl = TmdbImageHelper.buildUrl(
+      widget.movie.posterUrl ?? widget.movie.backdropUrl,
+    );
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: 750,
+          height: 480,
+          color: AppColors.plannerBg,
+          child: Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      posterImageUrl.isNotEmpty
+                          ? posterImageUrl
+                          : 'https://via.placeholder.com/400x600',
+                      fit: BoxFit.cover,
+                    ),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.9),
+                            Colors.black.withValues(alpha: 0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 24,
+                      bottom: 32,
+                      right: 16,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'SCHEDULING',
+                            style: GoogleFonts.inter(
+                              color: AppColors.softPeriwinkle,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.movie.title.toUpperCase(),
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                              height: 1.1,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Expanded(
+                flex: 6,
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Plan your night', style: AppStyles.heading(size: 20)),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                            onPressed: () => Navigator.of(context).pop(),
+                            hoverColor: Colors.white10,
+                            splashRadius: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column (
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                             Text('DATE', style: AppStyles.label(size: 11)),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    _QuickPill(
+                                      label: 'Tonight',
+                                      isActive: isTonight,
+                                      onTap: () => setState(() => _selectedDate = now),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _QuickPill(
+                                      label: 'Tomorrow',
+                                      isActive: isTomorrow,
+                                      onTap: () => setState(() => _selectedDate = now.add(const Duration(days: 1))),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _QuickPill(
+                                      label: (!isTonight && !isTomorrow && _selectedDate != null)
+                                          ? DateFormat('MMM d').format(_selectedDate!)
+                                          : 'Pick Date',
+                                      icon: Icons.calendar_today_rounded,
+                                      isActive: (!isTonight && !isTomorrow && _selectedDate != null),
+                                      onTap: _pickDate,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+
+                                Text('TIME', style: AppStyles.label(size: 11)),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    _QuickPill(
+                                      label: '8:00 PM',
+                                      isActive: is8PM,
+                                      onTap: () => setState(() => _selectedTime = const TimeOfDay(hour: 20, minute: 0)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _QuickPill(
+                                      label: '10:00 PM',
+                                      isActive: is10PM,
+                                      onTap: () => setState(() => _selectedTime = const TimeOfDay(hour: 22, minute: 0)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _QuickPill(
+                                      label: (!is8PM && !is10PM && _selectedTime != null)
+                                          ? _selectedTime!.format(context)
+                                          : 'Pick Time',
+                                      icon: Icons.access_time_rounded,
+                                      isActive: (!is8PM && !is10PM && _selectedTime != null),
+                                      onTap: _pickTime,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+
+                                Text('REMINDER', style: AppStyles.label(size: 11)),
+                                const SizedBox(height: 10),
+                                
+                               Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 2,
+                                      child: TextFormField(
+                                        controller: _reminderController,
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: AppColors.plannerSurface,
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.softPeriwinkle)),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+
+                                    Expanded(
+                                      flex: 1,
+                                      child: DropdownButtonFormField<String>(
+                                        dropdownColor: AppColors.plannerCard,
+                                        value: _reminderUnit,
+                                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+                                        decoration: InputDecoration(
+                                          filled: true,
+                                          fillColor: AppColors.plannerSurface,
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.softPeriwinkle)),
+                                        ),
+                                        items: ['Minutes', 'Hours', 'Days'].map((String unit) {
+                                          return DropdownMenuItem(
+                                            value: unit,
+                                            child: Text(unit, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) => setState(() => _reminderUnit = val!),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 24),
+
+                                Text('WHERE TO WATCH', style: AppStyles.label(size: 11)),
+                                const SizedBox(height: 10),
+                                DropdownButtonFormField<String>(
+                                  dropdownColor: AppColors.plannerCard,
+                                  value: _selectedPlatform,
+                                  hint: Text(_isLoadingPlatforms ? 'Loading...' : 'Select a platform', style: AppStyles.body(size: 14)),
+                                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: AppColors.plannerSurface,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppColors.cardBorder),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppColors.cardBorder),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppColors.softPeriwinkle),
+                                    ),
+                                  ),
+                                  items: _platforms.map((String platform) {
+                                    return DropdownMenuItem(
+                                      value: platform,
+                                      child: Text(platform, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                                    );
+                                  }).toList(),
+                                  onChanged: (val) => setState(() => _selectedPlatform = val),
+                                ),
+                             ]
+                          )
+                        )
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: (_selectedDate != null && _selectedTime != null && _selectedPlatform != null)
+                              ? () async {
+                                final db = LocalDbService();
+
+                                final scheduledDateTime = DateTime(
+                                  _selectedDate!.year,
+                                  _selectedDate!.month,
+                                  _selectedDate!.day,
+                                  _selectedTime!.hour,
+                                  _selectedTime!.minute,
+                                );
+
+                                if (!db.isInWatchlist(widget.movie.id)) {
+                                  final watchlistItem = WatchlistItem(
+                                    tmdbId: widget.movie.id,
+                                    title: widget.movie.title,
+                                    posterPath: widget.movie.posterUrl ?? '',
+                                    runtimeMinutes: widget.movie.runtime,
+                                    genreIds: [], // TODO: pass the IDs 
+                                    cachedAt: DateTime.now().toUtc(),
+                                  );
+
+                                  await db.toggleWatchlist(watchlistItem);
+                                }
+
+                                final parsedReminder = int.tryParse(_reminderController.text) ?? 10;
+
+                                int totalMinutesOffset = parsedReminder;
+                                  if (_reminderUnit == 'Hours') totalMinutesOffset = parsedReminder * 60;
+                                  if (_reminderUnit == 'Days') totalMinutesOffset = parsedReminder * 1440;
+
+                                final event = ScheduledEvent(
+                                  id: DateTime.now().millisecondsSinceEpoch.toString(), 
+                                  movieId: widget.movie.id.toString(), 
+                                  movieTitle: widget.movie.title, 
+                                  posterUrl: posterImageUrl, 
+                                  scheduledDate: scheduledDateTime, 
+                                  platform: _selectedPlatform!, 
+                                  runtime: widget.movie.runtime, 
+                                  genres: widget.movie.genres,
+                                  reminderOffsetMinutes: totalMinutesOffset,
+                                  isNotified: false,
+                                );
+
+                                await db.scheduleEvent(event);
+
+                                Navigator.of(context).pop();
+
+                                final prefsBox = Hive.box<UserPreferences>('user_preferences');
+                                final prefs = prefsBox.get('current_prefs') ?? UserPreferences();
+
+                                if (prefs != null && prefs.notificationsEnabled) {
+                                  UniversalBanner.show(     
+                                    context: context,
+                                    title: "${event.movieTitle} Successfully Scheduled!",
+                                    subTitle: "At ${DateFormat('h:mm a').format(event.scheduledDate)} on ${event.platform}.",
+                                    imageUrl: event.posterUrl,
+                                  );
+                                }
+                                
+                              }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.softPeriwinkle,
+                            disabledBackgroundColor: AppColors.softPeriwinkle.withOpacity(0.3),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'Lock in Movie Night',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickPill extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+  final IconData? icon;
+
+  const _QuickPill({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+    this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: isActive ? AppColors.softPeriwinkle : Colors.black.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isActive ? AppColors.softPeriwinkle : Colors.white.withOpacity(0.1),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 14, color: isActive ? Colors.white : Colors.white54),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  color: isActive ? Colors.white : Colors.white.withOpacity(0.7),
+                  fontSize: 13,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ScheduleFromWatchlistModal extends StatefulWidget {
+  final List<WatchlistItem> movies;
+
+  const ScheduleFromWatchlistModal({super.key, required this.movies});
+
+  @override
+  State<ScheduleFromWatchlistModal> createState() => _ScheduleFromWatchlistModalState();
+}
+
+class _ScheduleFromWatchlistModalState extends State<ScheduleFromWatchlistModal> {
+  int _currentIndex = 0;
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+  String? _selectedPlatform;
+  List<String> _platforms = [];
+  bool _isLoadingPlatforms = true;
+  final TextEditingController _reminderController =
+      TextEditingController(text: '10');
+  String _reminderUnit = 'Minutes';
+  late List<WatchlistItem> _movies;
+  StreamSubscription<BoxEvent>? _watchlistSubscription;
+
+  WatchlistItem get _current => _movies[_currentIndex];
+
+  @override
+  void initState() {
+    super.initState();
+    _movies = List<WatchlistItem>.from(widget.movies);
+    _watchlistSubscription =
+        Hive.box<WatchlistItem>('watchlist').watch().listen((_) {
+      _syncMoviesWithWatchlist();
+    });
+    _fetchPlatforms();
+  }
+
+  @override
+  void dispose() {
+    _reminderController.dispose();
+    _watchlistSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _resetSelectionState() {
+    _selectedDate = null;
+    _selectedTime = null;
+    _selectedPlatform = null;
+    _platforms = [];
+    _isLoadingPlatforms = true;
+    _reminderController.text = '10';
+    _reminderUnit = 'Minutes';
+  }
+
+  void _syncMoviesWithWatchlist() {
+    final updatedMovies = Hive.box<WatchlistItem>('watchlist').values.toList();
+    final previousCurrentId =
+        _movies.isNotEmpty && _currentIndex < _movies.length
+            ? _movies[_currentIndex].tmdbId
+            : null;
+
+    if (updatedMovies.isEmpty) {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      return;
+    }
+
+    int nextIndex = _currentIndex;
+
+    if (previousCurrentId != null) {
+      final currentStillExists = updatedMovies.indexWhere(
+        (movie) => movie.tmdbId == previousCurrentId,
+      );
+
+      if (currentStillExists >= 0) {
+        nextIndex = currentStillExists;
+      } else if (_currentIndex >= updatedMovies.length) {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+        return;
+      }
+    } else {
+      nextIndex = 0;
+    }
+
+    final currentChanged =
+        previousCurrentId == null ||
+        updatedMovies[nextIndex].tmdbId != previousCurrentId;
+
+    setState(() {
+      _movies = updatedMovies;
+      _currentIndex = nextIndex;
+      if (currentChanged) {
+        _resetSelectionState();
+      }
+    });
+
+    if (currentChanged) {
+      _fetchPlatforms();
+    }
+  }
+
+  void _goTo(int index) {
+    setState(() {
+      _currentIndex = index;
+      _resetSelectionState();
+    });
+    _fetchPlatforms();
+  }
+
+  Future<void> _fetchPlatforms() async {
+    if (_movies.isEmpty) return;
+    final movieId = _current.tmdbId.toString();
+
+    try {
+      final sources = await ApiClient().getSources(movieId);
+      if (!mounted || _movies.isEmpty || _current.tmdbId.toString() != movieId) {
+        return;
+      }
+      setState(() {
+        _platforms = sources.map((s) => s.name).toSet().cast<String>().toList();
+        _platforms.add('Local File');
+        _platforms.add('Pirated HEHE');
+        _platforms.add('In Theater');
+        _isLoadingPlatforms = false;
+      });
+    } catch (_) {
+      if (!mounted || _movies.isEmpty || _current.tmdbId.toString() != movieId) {
+        return;
+      }
+      setState(() {
+        _platforms = ['Local File', 'Pirated HEHE', 'In Theater'];
+        _isLoadingPlatforms = false;
+      });
+    }
+  }
+
+  Future<void> _pickDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(primary: AppColors.softPeriwinkle),
+        ),
+        child: child!,
+      ),
+    );
+    if (date != null) setState(() => _selectedDate = date);
+  }
+
+  Future<void> _pickTime() async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 20, minute: 0),
+      builder: (context, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(primary: AppColors.softPeriwinkle),
+        ),
+        child: child!,
+      ),
+    );
+    if (time != null) setState(() => _selectedTime = time);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final isTonight = _selectedDate?.day == now.day;
+    final isTomorrow = _selectedDate?.day == now.add(const Duration(days: 1)).day;
+    final is8PM = _selectedTime?.hour == 20 && _selectedTime?.minute == 0;
+    final is10PM = _selectedTime?.hour == 22 && _selectedTime?.minute == 0;
+    final posterUrl = TmdbImageHelper.buildUrl(_current.posterPath, size: 'w500');
+    final total = _movies.length;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: 750,
+          height: 480,
+          color: AppColors.plannerBg,
+          child: Row(
+            children: [
+              // Left: poster + prev/next nav
+              Expanded(
+                flex: 4,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    posterUrl.isNotEmpty
+                        ? Image.network(posterUrl, fit: BoxFit.cover)
+                        : Container(color: AppColors.plannerSurface, child: const Icon(Icons.movie, color: AppColors.textMuted, size: 48)),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.9),
+                            Colors.black.withValues(alpha: 0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 24,
+                      bottom: 32,
+                      right: 16,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'SCHEDULING',
+                            style: GoogleFonts.inter(
+                              color: AppColors.softPeriwinkle,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _current.title.toUpperCase(),
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              height: 1.1,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              _NavButton(
+                                icon: Icons.arrow_back_ios_new_rounded,
+                                enabled: _currentIndex > 0,
+                                onTap: () => _goTo(_currentIndex - 1),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                '${_currentIndex + 1} / $total',
+                                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                              ),
+                              const SizedBox(width: 10),
+                              _NavButton(
+                                icon: Icons.arrow_forward_ios_rounded,
+                                enabled: _currentIndex < total - 1,
+                                onTap: () => _goTo(_currentIndex + 1),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Right: scheduling form
+              Expanded(
+                flex: 6,
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Plan your night', style: AppStyles.heading(size: 20)),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                            onPressed: () => Navigator.of(context).pop(),
+                            hoverColor: Colors.white10,
+                            splashRadius: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('DATE', style: AppStyles.label(size: 11)),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  _QuickPill(label: 'Tonight', isActive: isTonight, onTap: () => setState(() => _selectedDate = now)),
+                                  const SizedBox(width: 10),
+                                  _QuickPill(label: 'Tomorrow', isActive: isTomorrow, onTap: () => setState(() => _selectedDate = now.add(const Duration(days: 1)))),
+                                  const SizedBox(width: 10),
+                                  _QuickPill(
+                                    label: (!isTonight && !isTomorrow && _selectedDate != null) ? DateFormat('MMM d').format(_selectedDate!) : 'Pick Date',
+                                    icon: Icons.calendar_today_rounded,
+                                    isActive: (!isTonight && !isTomorrow && _selectedDate != null),
+                                    onTap: _pickDate,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Text('TIME', style: AppStyles.label(size: 11)),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  _QuickPill(label: '8:00 PM', isActive: is8PM, onTap: () => setState(() => _selectedTime = const TimeOfDay(hour: 20, minute: 0))),
+                                  const SizedBox(width: 10),
+                                  _QuickPill(label: '10:00 PM', isActive: is10PM, onTap: () => setState(() => _selectedTime = const TimeOfDay(hour: 22, minute: 0))),
+                                  const SizedBox(width: 10),
+                                  _QuickPill(
+                                    label: (!is8PM && !is10PM && _selectedTime != null) ? _selectedTime!.format(context) : 'Pick Time',
+                                    icon: Icons.access_time_rounded,
+                                    isActive: (!is8PM && !is10PM && _selectedTime != null),
+                                    onTap: _pickTime,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Text('REMINDER', style: AppStyles.label(size: 11)),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: TextFormField(
+                                      controller: _reminderController,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: AppColors.plannerSurface,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.softPeriwinkle)),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    flex: 1,
+                                    child: DropdownButtonFormField<String>(
+                                      dropdownColor: AppColors.plannerCard,
+                                      value: _reminderUnit,
+                                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: AppColors.plannerSurface,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.softPeriwinkle)),
+                                      ),
+                                      items: ['Minutes', 'Hours', 'Days'].map((String unit) {
+                                        return DropdownMenuItem(
+                                          value: unit,
+                                          child: Text(unit, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                                        );
+                                      }).toList(),
+                                      onChanged: (val) => setState(() => _reminderUnit = val!),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Text('WHERE TO WATCH', style: AppStyles.label(size: 11)),
+                              const SizedBox(height: 10),
+                              DropdownButtonFormField<String>(
+                                dropdownColor: AppColors.plannerCard,
+                                initialValue: _selectedPlatform,
+                                hint: Text(_isLoadingPlatforms ? 'Loading...' : 'Select a platform', style: AppStyles.body(size: 14)),
+                                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: AppColors.plannerSurface,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.softPeriwinkle)),
+                                ),
+                                items: _platforms.map((p) => DropdownMenuItem(value: p, child: Text(p, style: const TextStyle(color: Colors.white, fontSize: 14)))).toList(),
+                                onChanged: (val) => setState(() => _selectedPlatform = val),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: (_selectedDate != null && _selectedTime != null && _selectedPlatform != null)
+                              ? () async {
+                                  final db = LocalDbService();
+                                  final scheduledDateTime = DateTime(
+                                    _selectedDate!.year, _selectedDate!.month, _selectedDate!.day,
+                                    _selectedTime!.hour, _selectedTime!.minute,
+                                  );
+                                  final parsedReminder =
+                                      int.tryParse(_reminderController.text) ?? 10;
+                                  int totalMinutesOffset = parsedReminder;
+                                  if (_reminderUnit == 'Hours') {
+                                    totalMinutesOffset = parsedReminder * 60;
+                                  }
+                                  if (_reminderUnit == 'Days') {
+                                    totalMinutesOffset = parsedReminder * 1440;
+                                  }
+                                  final event = ScheduledEvent(
+                                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                    movieId: _current.tmdbId.toString(),
+                                    movieTitle: _current.title,
+                                    posterUrl: posterUrl,
+                                    scheduledDate: scheduledDateTime,
+                                    platform: _selectedPlatform!,
+                                    runtime: _current.runtimeMinutes,
+                                    genres: [],
+                                    reminderOffsetMinutes: totalMinutesOffset,
+                                    isNotified: false,
+                                  );
+                                  await db.scheduleEvent(event);
+                                  if (!context.mounted) return;
+                                  Navigator.of(context).pop();
+                                  final prefsBox = Hive.box<UserPreferences>('user_preferences');
+                                  final prefs = prefsBox.get('current_prefs');
+                                  if (prefs != null && prefs.notificationsEnabled) {
+                                    UniversalBanner.show(
+                                      context: context,
+                                      title: '${event.movieTitle} Successfully Scheduled!',
+                                      subTitle: 'At ${DateFormat('h:mm a').format(event.scheduledDate)} on ${event.platform}.',
+                                      imageUrl: event.posterUrl,
+                                    );
+                                  }
+                                }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.softPeriwinkle,
+                            disabledBackgroundColor: AppColors.softPeriwinkle.withValues(alpha: 0.3),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'Lock in Movie Night',
+                            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavButton extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _NavButton({required this.icon, required this.enabled, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: enabled ? Colors.white.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.05),
+          shape: BoxShape.circle,
+          border: Border.all(color: enabled ? Colors.white30 : Colors.white10),
+        ),
+        child: Icon(icon, size: 14, color: enabled ? Colors.white : Colors.white24),
+      ),
+    );
+  }
+}
