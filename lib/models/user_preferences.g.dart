@@ -18,18 +18,15 @@ class UserPreferencesAdapter extends TypeAdapter<UserPreferences> {
     };
     return UserPreferences(
       notificationsEnabled: fields[0] as bool,
-      isDarkMode: fields[1] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserPreferences obj) {
     writer
-      ..writeByte(2)
-      ..writeByte(0)
-      ..write(obj.notificationsEnabled)
       ..writeByte(1)
-      ..write(obj.isDarkMode);
+      ..writeByte(0)
+      ..write(obj.notificationsEnabled);
   }
 
   @override

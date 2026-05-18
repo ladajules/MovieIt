@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:movieit/models/scheduled_event.dart';
 import 'package:movieit/models/user_preferences.dart';
@@ -98,6 +99,9 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
     final isTomorrow = _selectedDate?.day == now.add(const Duration(days: 1)).day;
     final is8PM = _selectedTime?.hour == 20 && _selectedTime?.minute == 0;
     final is10PM = _selectedTime?.hour == 22 && _selectedTime?.minute == 0;
+    final posterImageUrl = TmdbImageHelper.buildUrl(
+      widget.movie.posterUrl ?? widget.movie.backdropUrl,
+    );
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -116,7 +120,9 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                   fit: StackFit.expand,
                   children: [
                     Image.network(
-                      widget.movie.posterUrl ?? widget.movie.backdropUrl ?? 'https://via.placeholder.com/400x600',
+                      posterImageUrl.isNotEmpty
+                          ? posterImageUrl
+                          : 'https://via.placeholder.com/400x600',
                       fit: BoxFit.cover,
                     ),
                     DecoratedBox(
@@ -379,7 +385,7 @@ class _ScheduleMovieModalState extends State<ScheduleMovieModal> {
                                   id: DateTime.now().millisecondsSinceEpoch.toString(), 
                                   movieId: widget.movie.id.toString(), 
                                   movieTitle: widget.movie.title, 
-                                  posterUrl: TmdbImageHelper.buildUrl(widget.movie.posterUrl), 
+                                  posterUrl: posterImageUrl, 
                                   scheduledDate: scheduledDateTime, 
                                   platform: _selectedPlatform!, 
                                   runtime: widget.movie.runtime, 
@@ -502,31 +508,109 @@ class _ScheduleFromWatchlistModalState extends State<ScheduleFromWatchlistModal>
   String? _selectedPlatform;
   List<String> _platforms = [];
   bool _isLoadingPlatforms = true;
-  int _selectedReminder = 10;
+  final TextEditingController _reminderController =
+      TextEditingController(text: '10');
+  String _reminderUnit = 'Minutes';
+  late List<WatchlistItem> _movies;
+  StreamSubscription<BoxEvent>? _watchlistSubscription;
 
-  WatchlistItem get _current => widget.movies[_currentIndex];
+  WatchlistItem get _current => _movies[_currentIndex];
 
   @override
   void initState() {
     super.initState();
+    _movies = List<WatchlistItem>.from(widget.movies);
+    _watchlistSubscription =
+        Hive.box<WatchlistItem>('watchlist').watch().listen((_) {
+      _syncMoviesWithWatchlist();
+    });
     _fetchPlatforms();
+  }
+
+  @override
+  void dispose() {
+    _reminderController.dispose();
+    _watchlistSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _resetSelectionState() {
+    _selectedDate = null;
+    _selectedTime = null;
+    _selectedPlatform = null;
+    _platforms = [];
+    _isLoadingPlatforms = true;
+    _reminderController.text = '10';
+    _reminderUnit = 'Minutes';
+  }
+
+  void _syncMoviesWithWatchlist() {
+    final updatedMovies = Hive.box<WatchlistItem>('watchlist').values.toList();
+    final previousCurrentId =
+        _movies.isNotEmpty && _currentIndex < _movies.length
+            ? _movies[_currentIndex].tmdbId
+            : null;
+
+    if (updatedMovies.isEmpty) {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      return;
+    }
+
+    int nextIndex = _currentIndex;
+
+    if (previousCurrentId != null) {
+      final currentStillExists = updatedMovies.indexWhere(
+        (movie) => movie.tmdbId == previousCurrentId,
+      );
+
+      if (currentStillExists >= 0) {
+        nextIndex = currentStillExists;
+      } else if (_currentIndex >= updatedMovies.length) {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+        return;
+      }
+    } else {
+      nextIndex = 0;
+    }
+
+    final currentChanged =
+        previousCurrentId == null ||
+        updatedMovies[nextIndex].tmdbId != previousCurrentId;
+
+    setState(() {
+      _movies = updatedMovies;
+      _currentIndex = nextIndex;
+      if (currentChanged) {
+        _resetSelectionState();
+      }
+    });
+
+    if (currentChanged) {
+      _fetchPlatforms();
+    }
   }
 
   void _goTo(int index) {
     setState(() {
       _currentIndex = index;
-      _selectedDate = null;
-      _selectedTime = null;
-      _selectedPlatform = null;
-      _platforms = [];
-      _isLoadingPlatforms = true;
+      _resetSelectionState();
     });
     _fetchPlatforms();
   }
 
   Future<void> _fetchPlatforms() async {
+    if (_movies.isEmpty) return;
+    final movieId = _current.tmdbId.toString();
+
     try {
-      final sources = await ApiClient().getSources(_current.tmdbId.toString());
+      final sources = await ApiClient().getSources(movieId);
+      if (!mounted || _movies.isEmpty || _current.tmdbId.toString() != movieId) {
+        return;
+      }
       setState(() {
         _platforms = sources.map((s) => s.name).toSet().cast<String>().toList();
         _platforms.add('Local File');
@@ -535,6 +619,9 @@ class _ScheduleFromWatchlistModalState extends State<ScheduleFromWatchlistModal>
         _isLoadingPlatforms = false;
       });
     } catch (_) {
+      if (!mounted || _movies.isEmpty || _current.tmdbId.toString() != movieId) {
+        return;
+      }
       setState(() {
         _platforms = ['Local File', 'Pirated HEHE', 'In Theater'];
         _isLoadingPlatforms = false;
@@ -580,7 +667,7 @@ class _ScheduleFromWatchlistModalState extends State<ScheduleFromWatchlistModal>
     final is8PM = _selectedTime?.hour == 20 && _selectedTime?.minute == 0;
     final is10PM = _selectedTime?.hour == 22 && _selectedTime?.minute == 0;
     final posterUrl = TmdbImageHelper.buildUrl(_current.posterPath, size: 'w500');
-    final total = widget.movies.length;
+    final total = _movies.length;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -735,11 +822,47 @@ class _ScheduleFromWatchlistModalState extends State<ScheduleFromWatchlistModal>
                               const SizedBox(height: 10),
                               Row(
                                 children: [
-                                  _QuickPill(label: '5 mins', isActive: _selectedReminder == 5, onTap: () => setState(() => _selectedReminder = 5)),
-                                  const SizedBox(width: 10),
-                                  _QuickPill(label: '10 mins', isActive: _selectedReminder == 10, onTap: () => setState(() => _selectedReminder = 10)),
-                                  const SizedBox(width: 10),
-                                  _QuickPill(label: '30 mins', isActive: _selectedReminder == 30, onTap: () => setState(() => _selectedReminder = 30)),
+                                  Expanded(
+                                    flex: 2,
+                                    child: TextFormField(
+                                      controller: _reminderController,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: AppColors.plannerSurface,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.softPeriwinkle)),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    flex: 1,
+                                    child: DropdownButtonFormField<String>(
+                                      dropdownColor: AppColors.plannerCard,
+                                      value: _reminderUnit,
+                                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54),
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: AppColors.plannerSurface,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.softPeriwinkle)),
+                                      ),
+                                      items: ['Minutes', 'Hours', 'Days'].map((String unit) {
+                                        return DropdownMenuItem(
+                                          value: unit,
+                                          child: Text(unit, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                                        );
+                                      }).toList(),
+                                      onChanged: (val) => setState(() => _reminderUnit = val!),
+                                    ),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 24),
@@ -777,6 +900,15 @@ class _ScheduleFromWatchlistModalState extends State<ScheduleFromWatchlistModal>
                                     _selectedDate!.year, _selectedDate!.month, _selectedDate!.day,
                                     _selectedTime!.hour, _selectedTime!.minute,
                                   );
+                                  final parsedReminder =
+                                      int.tryParse(_reminderController.text) ?? 10;
+                                  int totalMinutesOffset = parsedReminder;
+                                  if (_reminderUnit == 'Hours') {
+                                    totalMinutesOffset = parsedReminder * 60;
+                                  }
+                                  if (_reminderUnit == 'Days') {
+                                    totalMinutesOffset = parsedReminder * 1440;
+                                  }
                                   final event = ScheduledEvent(
                                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                                     movieId: _current.tmdbId.toString(),
@@ -786,7 +918,7 @@ class _ScheduleFromWatchlistModalState extends State<ScheduleFromWatchlistModal>
                                     platform: _selectedPlatform!,
                                     runtime: _current.runtimeMinutes,
                                     genres: [],
-                                    reminderOffsetMinutes: _selectedReminder,
+                                    reminderOffsetMinutes: totalMinutesOffset,
                                     isNotified: false,
                                   );
                                   await db.scheduleEvent(event);

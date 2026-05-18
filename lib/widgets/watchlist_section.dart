@@ -42,7 +42,11 @@ class WatchlistSection extends StatelessWidget {
                 runSpacing: 12,
                 children: movies.map((m) {
                   final w = (c.maxWidth - (cols - 1) * 12) / cols;
-                  return _WatchlistCard(movie: m, width: w);
+                  return _WatchlistCard(
+                    movie: m,
+                    width: w,
+                    bannerContext: ctx,
+                  );
                 }).toList(),
               );
             });
@@ -97,7 +101,13 @@ class _EmptyWatchlistState extends StatelessWidget {
 class _WatchlistCard extends StatefulWidget {
   final WatchlistItem movie;
   final double width;
-  const _WatchlistCard({required this.movie, required this.width});
+  final BuildContext bannerContext;
+
+  const _WatchlistCard({
+    required this.movie,
+    required this.width,
+    required this.bannerContext,
+  });
 
   @override
   State<_WatchlistCard> createState() => _WatchlistCardState();
@@ -157,16 +167,17 @@ class _WatchlistCardState extends State<_WatchlistCard> {
                   right: 8,
                   child: GestureDetector(
                     onTap: () async {
-                      await LocalDbService().toggleWatchlist(widget.movie);
-                      if (context.mounted) {
+                      final removedMovie = widget.movie;
+                      await LocalDbService().toggleWatchlist(removedMovie);
+                      if (widget.bannerContext.mounted) {
                         final prefsBox = Hive.box<UserPreferences>('user_preferences');
                         final prefs = prefsBox.get('current_prefs');
                         if (prefs != null && prefs.notificationsEnabled) {
                           UniversalBanner.show(
-                            context: context,
+                            context: widget.bannerContext,
                             title: 'Removed from Watchlist',
-                            subTitle: '${widget.movie.title} removed from your list.',
-                            imageUrl: widget.movie.posterPath,
+                            subTitle: '${removedMovie.title} removed from your list.',
+                            imageUrl: removedMovie.posterPath,
                           );
                         }
                       }

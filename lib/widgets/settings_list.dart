@@ -17,7 +17,6 @@ class SettingsList extends StatelessWidget {
         // Fetch current settings, or use your default values if none exist yet
         final prefs = box.get('current_prefs') ?? UserPreferences(
           notificationsEnabled: true,
-          isDarkMode: true,
         );
 
         return Column(
@@ -28,18 +27,11 @@ class SettingsList extends StatelessWidget {
             _buildSwitchTile(
               title: "Show in-app banners",
               value: prefs.notificationsEnabled,
+              textColor: Colors.white,
+              inactiveTrackColor: AppColors.plannerBg,
+              inactiveThumbColor: AppColors.textMuted,
               onChanged: (val) {
                 prefs.notificationsEnabled = val;
-                box.put('current_prefs', prefs);
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            _buildSwitchTile(
-              title: "Dark Mode",
-              value: prefs.isDarkMode,
-              onChanged: (val) {
-                prefs.isDarkMode = val;
                 box.put('current_prefs', prefs);
               },
             ),
@@ -57,19 +49,22 @@ class SettingsList extends StatelessWidget {
   Widget _buildSwitchTile({
     required String title, 
     required bool value, 
+    required Color textColor,
+    required Color inactiveTrackColor,
+    required Color inactiveThumbColor,
     required ValueChanged<bool> onChanged
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 14)),
+        Text(title, style: TextStyle(color: textColor, fontSize: 14)),
         Switch(
           value: value,
           onChanged: onChanged,
           activeColor: AppColors.softPeriwinkle,
           activeTrackColor: AppColors.softPeriwinkle.withOpacity(0.3),
-          inactiveThumbColor: AppColors.textMuted,
-          inactiveTrackColor: AppColors.plannerBg,
+          inactiveThumbColor: inactiveThumbColor,
+          inactiveTrackColor: inactiveTrackColor,
         ),
       ],
     );

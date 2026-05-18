@@ -1,10 +1,10 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:movieit/providers/movie_provider.dart';
 import 'package:movieit/theme/app_colors.dart';
 import 'package:movieit/theme/app_styles.dart';
+import 'package:movieit/theme/movieit_theme.dart';
 import 'package:movieit/widgets/layout/custom_footer.dart';
 import 'package:movieit/widgets/movieit_search_bar.dart';
 import 'package:movieit/widgets/search_result_list.dart';
@@ -18,92 +18,6 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  static const Map<int, String> _genreLabels = {
-    28: 'Action',
-    12: 'Adventure',
-    16: 'Animation',
-    35: 'Comedy',
-    80: 'Crime',
-    99: 'Documentary',
-    18: 'Drama',
-    10751: 'Family',
-    14: 'Fantasy',
-    36: 'History',
-    27: 'Horror',
-    10402: 'Music',
-    9648: 'Mystery',
-    10749: 'Romance',
-    878: 'Sci-Fi',
-    10770: 'TV Movie',
-    53: 'Thriller',
-    10752: 'War',
-    37: 'Western',
-  };
-
-  static const Map<String, String> _languageLabels = {
-    'en': 'English',
-    'af': 'Afrikaans',
-    'ar': 'Arabic',
-    'bg': 'Bulgarian',
-    'bn': 'Bengali',
-    'ca': 'Catalan',
-    'cs': 'Czech',
-    'cy': 'Welsh',
-    'da': 'Danish',
-    'de': 'German',
-    'el': 'Greek',
-    'eo': 'Esperanto',
-    'es': 'Spanish',
-    'et': 'Estonian',
-    'eu': 'Basque',
-    'fa': 'Persian',
-    'fi': 'Finnish',
-    'fr': 'French',
-    'ga': 'Irish',
-    'gl': 'Galician',
-    'gu': 'Gujarati',
-    'he': 'Hebrew',
-    'hi': 'Hindi',
-    'hr': 'Croatian',
-    'hu': 'Hungarian',
-    'id': 'Indonesian',
-    'it': 'Italian',
-    'ja': 'Japanese',
-    'ka': 'Georgian',
-    'kn': 'Kannada',
-    'ko': 'Korean',
-    'lt': 'Lithuanian',
-    'lv': 'Latvian',
-    'mk': 'Macedonian',
-    'ml': 'Malayalam',
-    'mr': 'Marathi',
-    'ms': 'Malay',
-    'mt': 'Maltese',
-    'nb': 'Norwegian',
-    'nl': 'Dutch',
-    'pa': 'Punjabi',
-    'pl': 'Polish',
-    'pt': 'Portuguese',
-    'ro': 'Romanian',
-    'ru': 'Russian',
-    'sk': 'Slovak',
-    'sl': 'Slovenian',
-    'sq': 'Albanian',
-    'sr': 'Serbian',
-    'sv': 'Swedish',
-    'sw': 'Swahili',
-    'ta': 'Tamil',
-    'te': 'Telugu',
-    'th': 'Thai',
-    'tl': 'Filipino',
-    'tr': 'Turkish',
-    'uk': 'Ukrainian',
-    'ur': 'Urdu',
-    'vi': 'Vietnamese',
-    'zh': 'Chinese (Mandarin)',
-    'zu': 'Zulu',
-  };
-
   static const RangeValues _defaultRuntimeRange = RangeValues(60, 240);
   static const double _defaultMinRating = 1.0;
 
@@ -119,8 +33,9 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<MovieProvider>(context, listen: false)
-          .loadTrendingAndDiscoverAndTop4();
+      final movieProvider = Provider.of<MovieProvider>(context, listen: false);
+      movieProvider.loadTrendingAndDiscoverAndTop4();
+      movieProvider.loadFilterOptions();
     });
   }
 
@@ -225,6 +140,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onFiltersTap() {
     final movieProvider = Provider.of<MovieProvider>(context, listen: false);
+    final genreLabels = movieProvider.genreLabels;
+    final languageLabels = movieProvider.languageLabels;
+    final theme = context.movieItTheme;
 
     Set<int> selectedGenreIds = Set<int>.from(_selectedGenreIds);
     RangeValues runtimeRange = _runtimeRange;
@@ -242,10 +160,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.76),
+      barrierColor: theme.shadowColor.withValues(alpha: 0.76),
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
+            final modalTheme = context.movieItTheme;
             final estimatedMatchCount = _estimateMatchCount(
               baseCount: baseCount,
               genres: selectedGenreIds,
@@ -256,16 +175,16 @@ class _SearchScreenState extends State<SearchScreen> {
             );
 
             final visibleGenres = genresExpanded
-                ? _genreLabels.entries.toList()
-                : _genreLabels.entries.take(7).toList();
+                ? genreLabels.entries.toList()
+                : genreLabels.entries.take(7).toList();
             final hiddenGenreCount =
-                math.max(0, _genreLabels.length - visibleGenres.length);
+                math.max(0, genreLabels.length - visibleGenres.length);
 
             final visibleLanguages = languagesExpanded
-                ? _languageLabels.entries.toList()
-                : _languageLabels.entries.take(7).toList();
+                ? languageLabels.entries.toList()
+                : languageLabels.entries.take(7).toList();
             final hiddenLanguageCount =
-                math.max(0, _languageLabels.length - visibleLanguages.length);
+                math.max(0, languageLabels.length - visibleLanguages.length);
 
             return Dialog(
               backgroundColor: Colors.transparent,
@@ -276,12 +195,12 @@ class _SearchScreenState extends State<SearchScreen> {
                     const BoxConstraints(maxWidth: 860, maxHeight: 760),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.plannerBg,
+                    gradient: modalTheme.heroGradient,
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: AppColors.cardBorder),
+                    border: Border.all(color: modalTheme.cardBorder),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.42),
+                        color: modalTheme.shadowColor.withValues(alpha: 0.42),
                         blurRadius: 34,
                         offset: const Offset(0, 22),
                       ),
@@ -312,14 +231,14 @@ class _SearchScreenState extends State<SearchScreen> {
                                         '$estimatedMatchCount movies match',
                                         style: AppStyles.body(
                                           size: 14,
-                                          color: AppColors.softPeriwinkle,
+                                          color: modalTheme.accent,
                                         ),
                                       ),
                                       Text(
                                         '\u00B7',
                                         style: AppStyles.body(
                                           size: 14,
-                                          color: AppColors.textMuted,
+                                          color: modalTheme.textMuted,
                                         ),
                                       ),
                                       InkWell(
@@ -338,7 +257,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                           '\u21BB Reset all',
                                           style: AppStyles.body(
                                             size: 14,
-                                            color: AppColors.textSecondary,
+                                            color: modalTheme.textSecondary,
                                           ),
                                         ),
                                       ),
@@ -349,9 +268,9 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                             IconButton(
                               onPressed: () => Navigator.pop(context),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.close_rounded,
-                                color: AppColors.textMuted,
+                                color: modalTheme.textMuted,
                               ),
                               splashRadius: 20,
                             ),
@@ -361,7 +280,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       Divider(
                         height: 1,
                         thickness: 1,
-                        color: AppColors.cardBorder.withValues(alpha: 0.9),
+                        color: modalTheme.cardBorder.withValues(alpha: 0.9),
                       ),
                       Expanded(
                         child: SingleChildScrollView(
@@ -420,7 +339,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                         '+ $hiddenGenreCount more',
                                         style: AppStyles.body(
                                           size: 14,
-                                          color: AppColors.textSecondary,
+                                          color: modalTheme.textSecondary,
                                         ),
                                       ),
                                     ),
@@ -499,7 +418,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      '${minRating.toStringAsFixed(1)}+',
+                                    '${minRating.toStringAsFixed(1)}+',
                                       style: AppStyles.heading(size: 14),
                                     ),
                                   ],
@@ -575,7 +494,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                         '+ $hiddenLanguageCount more',
                                         style: AppStyles.body(
                                           size: 14,
-                                          color: AppColors.textSecondary,
+                                          color: modalTheme.textSecondary,
                                         ),
                                       ),
                                     ),
@@ -590,7 +509,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         decoration: BoxDecoration(
                           border: Border(
                             top: BorderSide(
-                              color: AppColors.cardBorder.withValues(
+                              color: modalTheme.cardBorder.withValues(
                                 alpha: 0.9,
                               ),
                             ),
@@ -602,7 +521,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
-                              backgroundColor: AppColors.softPeriwinkle,
+                              backgroundColor: modalTheme.accent,
                               foregroundColor: AppColors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -622,7 +541,10 @@ class _SearchScreenState extends State<SearchScreen> {
                             },
                             child: Text(
                               'Show $estimatedMatchCount movies',
-                              style: AppStyles.heading(size: 15),
+                              style: AppStyles.heading(
+                                size: 15,
+                                color: AppColors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -642,13 +564,14 @@ class _SearchScreenState extends State<SearchScreen> {
     required String label,
     Widget? trailing,
   }) {
+    final theme = context.movieItTheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: Text(
             label,
-            style: AppStyles.label(size: 15, color: AppColors.textSecondary),
+            style: AppStyles.label(size: 15, color: theme.textSecondary),
           ),
         ),
         if (trailing != null) trailing,
@@ -660,6 +583,7 @@ class _SearchScreenState extends State<SearchScreen> {
     required bool matchAllGenres,
     required ValueChanged<bool> onChanged,
   }) {
+    final theme = context.movieItTheme;
     Widget segment({
       required String label,
       required bool selected,
@@ -673,7 +597,7 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
               color: selected
-                  ? AppColors.softPeriwinkle
+                  ? theme.accent
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(999),
             ),
@@ -682,7 +606,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 label,
                 style: AppStyles.body(
                   size: 12,
-                  color: selected ? AppColors.white : AppColors.textSecondary,
+                  color: selected ? AppColors.white : theme.textSecondary,
                 ),
               ),
             ),
@@ -695,9 +619,9 @@ class _SearchScreenState extends State<SearchScreen> {
       width: 172,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.plannerSurface,
+        color: theme.cardSurface,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.cardBorder),
+        border: Border.all(color: theme.cardBorder),
       ),
       child: Row(
         children: [
@@ -721,28 +645,30 @@ class _SearchScreenState extends State<SearchScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final theme = context.movieItTheme;
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
       onSelected: (_) => onTap(),
       showCheckmark: false,
-      selectedColor: AppColors.softPeriwinkle,
-      backgroundColor: AppColors.plannerSurface,
+      selectedColor: theme.accent,
+      backgroundColor: theme.cardSurface,
       side: BorderSide(
-        color: isSelected ? AppColors.softPeriwinkle : AppColors.cardBorder,
+        color: isSelected ? theme.accent : theme.cardBorder,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(999),
       ),
       labelStyle: AppStyles.body(
         size: 14,
-        color: isSelected ? AppColors.white : AppColors.textSecondary,
+        color: isSelected ? AppColors.white : theme.textSecondary,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
     );
   }
 
   Widget _buildRuntimeHistogram(RangeValues range) {
+    final theme = context.movieItTheme;
     const barHeights = <double>[
       2,
       4,
@@ -781,8 +707,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 height: barHeights[index],
                 decoration: BoxDecoration(
                   color: isActive
-                      ? AppColors.softPeriwinkle.withValues(alpha: 0.75)
-                      : AppColors.accentSoft.withValues(alpha: 0.85),
+                      ? theme.accent.withValues(alpha: 0.75)
+                      : theme.accentSoft.withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
@@ -794,6 +720,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildFilterOptions() {
+    final theme = context.movieItTheme;
     final activeCount = _selectedGenreIds.length +
         _selectedLanguages.length +
         (_runtimeRange != _defaultRuntimeRange ? 1 : 0) +
@@ -808,12 +735,12 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: _isFilterActive
-                  ? AppColors.softPeriwinkle.withValues(alpha: 0.2)
-                  : Colors.white.withValues(alpha: 0.08),
+                  ? theme.accent.withValues(alpha: 0.18)
+                  : theme.glassSurface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color:
-                    _isFilterActive ? AppColors.softPeriwinkle : Colors.white24,
+                    _isFilterActive ? theme.accent : theme.glassBorder,
               ),
             ),
             child: Row(
@@ -822,7 +749,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 Icon(
                   Icons.tune_rounded,
                   color:
-                      _isFilterActive ? AppColors.softPeriwinkle : Colors.white,
+                      _isFilterActive ? theme.accent : theme.textPrimary,
                   size: 18,
                 ),
                 const SizedBox(width: 8),
@@ -832,7 +759,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       : 'Filters',
                   style: AppStyles.body(
                     size: 14,
-                    color: Colors.white,
+                    color: theme.textPrimary,
                   ),
                 ),
               ],
@@ -845,15 +772,13 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.movieItTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF2E0A52), Colors.black, Color(0xFF032D6C)],
-        ),
+      decoration: BoxDecoration(
+        gradient: theme.heroGradient,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -877,8 +802,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   Consumer<MovieProvider>(
                     builder: (context, movieProvider, child) {
                       if (movieProvider.isLoading) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: theme.accent,
+                          ),
                         );
                       }
               
@@ -886,8 +813,8 @@ class _SearchScreenState extends State<SearchScreen> {
                         return Center(
                           child: Text(
                             movieProvider.errorMessage,
-                            style: const TextStyle(
-                              color: Colors.red,
+                            style: TextStyle(
+                              color: colorScheme.error,
                               fontSize: 18,
                             ),
                           ),
@@ -910,10 +837,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               ),
                               const Text(
                                 'No movies found.',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                ),
+                                style: TextStyle(fontSize: 18),
                               ),
                             ],
                           ),
@@ -946,7 +870,7 @@ class _AxisLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: AppStyles.body(size: 12, color: AppColors.textMuted),
+      style: AppStyles.body(size: 12),
     );
   }
 }
